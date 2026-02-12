@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/springfeld7/dt198g-group1-backend#readme",
   "dependencies": {
+    "argon2": "^0.44.0",
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
