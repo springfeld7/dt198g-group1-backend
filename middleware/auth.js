@@ -6,9 +6,10 @@
  * @param {Function} next - The next middleware function.
  */
 const authenticate = (req, res, next) => {
-    if (!req.session.userId) {
+    if (!req.session.user) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
+    req.user = req.session.user;
     next();
 };
 
