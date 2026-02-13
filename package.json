@@ -23,10 +23,12 @@
   "dependencies": {
     "argon2": "^0.44.0",
     "body-parser": "^2.2.2",
+    "connect-mongo": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
-    "mongoose": "^9.2.1"
+    "mongoose": "^9.2.1",
+    "express-session": "^1.19.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

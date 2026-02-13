@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const session = require('express-session');
+const MongoStore = require('connect-mongo').default || require('connect-mongo');
 const dotenv = require("dotenv");
 const { BASE_URL } = require("./config");
 
@@ -10,6 +12,22 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.DB_SERVER,
+        ttl: 24 * 60 * 60
+    }),
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 1000 * 60 * 60 * 24,
+        sameSite: 'lax',
+    }
+}))
 
 const routes = require("./routes/routes");
 
