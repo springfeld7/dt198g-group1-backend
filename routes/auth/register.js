@@ -48,7 +48,9 @@ const registerUserHandler = async (req, res) => {
             interests
         });
 
-        res.status(201).json({ message: "User registered", user });
+        // Remove password before sending
+        const { password: _, ...safeUser } = user.toObject();
+        res.status(201).json({ message: "User registered successfully", user: safeUser });
 
     } catch (err) {
         res.status(400).json({ error: "Failed to register" });
