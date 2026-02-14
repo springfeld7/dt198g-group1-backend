@@ -19,7 +19,7 @@ const mongoose = require('mongoose');
  * @property {mongoose.Types.ObjectId[]} interests - References to Interest documents associated with the user.
  * @property {mongoose.Types.ObjectId[]} matches - References to other User documents matched with this user.
  */
-const userSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     
     username: { 
         type: String,
@@ -95,4 +95,57 @@ const userSchema = new mongoose.Schema({
     }]
 });
 
-module.exports = mongoose.model('User', userSchema);
+/**
+ * Creates a new user if the username is available.
+ *
+ * @param {object} data - User registration data.
+ * @param {string} data.username - Unique username.
+ * @param {string} data.passwordHash - Hashed password.
+ * @param {string} data.firstName - First name.
+ * @param {string} data.surname - Last name.
+ * @param {string} data.email - Email address.
+ * @param {string} data.phone - Phone number.
+ * @param {number} data.age - User age.
+ * @param {string} data.location - User location.
+ * @param {string} data.gender - User gender.
+ * @param {string[]} data.interests - Interest identifiers.
+ * @returns {Promise<mongoose.Document>} Persisted user document.
+ */
+UserSchema.statics.register = async function (data) {
+    const {
+        username,
+        passwordHash,
+        firstName,
+        surname,
+        email,
+        phone,
+        age,
+        location,
+        gender,
+        interests
+    } = data;
+
+    const userExists = await this.findOne({ username });
+
+    if (userExists) {
+        throw new Error('Username already exists');
+    }
+
+    const user = new this({
+        username,
+        passwordHash,
+        firstName,
+        surname,
+        email,
+        phone,
+        age,
+        location,
+        gender,
+        interests,
+        matches: []
+    });
+
+    return user.save();
+};
+
+module.exports = mongoose.model('User', UserSchema);
