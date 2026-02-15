@@ -30,7 +30,7 @@ const UserSchema = new mongoose.Schema({
         min: [3, 'Username must be at least 3 character long'],
         max: [32, 'Username can be at most 32 characters long']
     },
-    passwordHash: {
+    password: {
         type: String,
         required: [true, 'Password is required'],
         minLength: [8, 'Password must be at least 8 character long']
@@ -114,7 +114,7 @@ const UserSchema = new mongoose.Schema({
 UserSchema.statics.register = async function (data) {
     const {
         username,
-        passwordHash,
+        password,
         firstName,
         surname,
         email,
@@ -133,7 +133,7 @@ UserSchema.statics.register = async function (data) {
 
     const user = new this({
         username,
-        passwordHash,
+        password,
         firstName,
         surname,
         email,
