@@ -1,0 +1,10 @@
+@server = localhost:3000
+@api_path = api
+@api_version = 1
+@url = http://{{server}}/{{api_path}}/v{{api_version}}
+
+# collects all events should return all events.
+###############################################
+GET {{url}}/events
+###############################################
+

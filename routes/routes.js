@@ -3,9 +3,11 @@ const router = express.Router();
 
 const authRoutes = require("./auth/auth");
 const userRoutes = require("./users/users");
+const eventRoutes = require("./events/events")
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
+router.use("/events", eventRoutes)
 
 router.use((req, res) => {
   res.status(404).json({ message: "Endpoint not found" });

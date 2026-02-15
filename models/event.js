@@ -31,5 +31,9 @@ const EventSchema = new mongoose.Schema({
     pairsThirdRound: { type: [[objectIdRef]], default: []},
 })
 
-const Event = mongoose.model('Event', EventSchema);
-module.exports =Event;
+EventSchema.statics.getEvents = async function() {
+    return await this.find()
+}
+
+
+module.exports = mongoose.model('Event', EventSchema);
