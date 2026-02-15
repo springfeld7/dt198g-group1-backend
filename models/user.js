@@ -152,7 +152,7 @@ UserSchema.statics.register = async function (data) {
  * Returns users from the database
  * @returns Promise<Array<UserDocument>> A Promise that resolves to an array of Mongoose User documents.
  */
-userSchema.statics.getUsers = async function() {
+UserSchema.statics.getUsers = async function() {
     return this.find().select('-password');
 };
 
@@ -161,7 +161,7 @@ userSchema.statics.getUsers = async function() {
  * @param {string} id id for the user
  * @returns {Promise<mongoose.Document|null>} The user object or null
  */
-userSchema.statics.getUserById = async function(id) {
+UserSchema.statics.getUserById = async function(id) {
     return this.findById(id).select('-password');
 };
 
