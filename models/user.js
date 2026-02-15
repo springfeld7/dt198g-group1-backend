@@ -96,23 +96,6 @@ const UserSchema = new mongoose.Schema({
 });
 
 /**
- * Returns users from the database
- * @returns Promise<Array<UserDocument>> A Promise that resolves to an array of Mongoose User documents.
- */
-userSchema.statics.getUsers = async function() {
-    return this.find().select('-password');
-};
-
-/**
- * Returns a user by ID
- * @param {string} id id for the user
- * @returns {Promise<mongoose.Document|null>} The user object or null
- */
-userSchema.statics.getUserById = async function(id) {
-    return this.findById(id).select('-password');
-};
-
-/**
  * Creates a new user if the username is available.
  *
  * @param {object} data - User registration data.
@@ -163,6 +146,23 @@ UserSchema.statics.register = async function (data) {
     });
 
     return user.save();
+};
+
+/**
+ * Returns users from the database
+ * @returns Promise<Array<UserDocument>> A Promise that resolves to an array of Mongoose User documents.
+ */
+userSchema.statics.getUsers = async function() {
+    return this.find().select('-password');
+};
+
+/**
+ * Returns a user by ID
+ * @param {string} id id for the user
+ * @returns {Promise<mongoose.Document|null>} The user object or null
+ */
+userSchema.statics.getUserById = async function(id) {
+    return this.findById(id).select('-password');
 };
 
 module.exports = mongoose.model('User', UserSchema);
