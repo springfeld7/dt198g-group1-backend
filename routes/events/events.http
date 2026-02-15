@@ -8,3 +8,36 @@
 GET {{url}}/events
 ###############################################
 
+// test1
+GET {{url}}/events/6991dce013ded751d7a90d2f
+###############################################
+
+// Fail to fetch
+GET {{url}}/events/6991dce013ded751d7a90d2
+###############################################
+
+// Post event
+POST {{url}}/events
+Content-Type: application/json
+
+{
+	"title": "Speed dating night",
+	"description": "An evening of quick rounds and great conversations.",
+	"date": "2026-03-01T18:30:00.000Z",
+	"location": "Community Hall",
+	"maxSpots": 40
+}
+###############################################
+
+// Fail to post event from lack of content
+POST {{url}}/events
+Content-Type: application/json
+
+{
+	"title": "",
+	"description": "An evening of quick rounds and great conversations.",
+	"date": "2026-03-01T18:30:00.000Z",
+	"location": "Community Hall",
+	"maxSpots": 40
+}
+###############################################

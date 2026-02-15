@@ -35,5 +35,8 @@ EventSchema.statics.getEvents = async function() {
     return await this.find()
 }
 
+EventSchema.statics.getEventById = async function(id) {
+    return this.findById(id)
+}
 
 module.exports = mongoose.model('Event', EventSchema);
