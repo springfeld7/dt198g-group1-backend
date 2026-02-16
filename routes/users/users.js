@@ -12,7 +12,7 @@ router.use(requireAuth);
  * This route fetches all users stored within the database.
  * It returns the users in a JSON file.
  *
- * @returns {json} 200 - JSON object of the specified user
+ * @returns {json} 200 - JSON object of all users
  * @returns {Error} 500 - Internal server error if reading the database fails
  */
 router.get("/", async (req, res) => {
