@@ -29,7 +29,6 @@ router.post("/", async (req, res) => {
       if (!user || !(await verifyPassword(user.password, password))) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
-      // TODO implement token
 
       // If successful, return the user data
       return res.status(200).json({
