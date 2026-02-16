@@ -17,5 +17,13 @@ const QuestionSchema = new mongoose.Schema({
 });
 
 
+/**
+ * Returns questions from the database
+ * @returns Promise<Array<UserDocument>> A Promise that resolves to an array of Mongoose User documents.
+ */
+QuestionSchema.statics.getQuestions = async function() {
+    return this.find();
+};
+
 const Question = mongoose.model('Question', QuestionSchema);
 module.exports = Question;
