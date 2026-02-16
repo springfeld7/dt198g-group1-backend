@@ -29,5 +29,6 @@ async function close() {
 
 module.exports = {
     connect,
-    close
+    close,
+    connectionString
 };
