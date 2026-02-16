@@ -25,7 +25,6 @@ const registerUserHandler = async (req, res) => {
             gender,
             interests
         } = req.body;
-
         // Validate passwords match
         if (password !== repeatPassword) {
             return res.status(400).json({ error: "Passwords do not match" });
@@ -47,7 +46,6 @@ const registerUserHandler = async (req, res) => {
             gender,
             interests
         });
-
         // Remove password before sending
         const { password: _, ...safeUser } = user.toObject();
         res.status(201).json({ message: "User registered successfully", user: safeUser });

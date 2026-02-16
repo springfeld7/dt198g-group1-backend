@@ -27,8 +27,8 @@ const UserSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        min: [3, 'Username must be at least 3 character long'],
-        max: [32, 'Username can be at most 32 characters long']
+        minLength: [3, 'Username must be at least 3 character long'],
+        maxLength: [32, 'Username can be at most 32 characters long']
     },
     password: {
         type: String,
@@ -43,15 +43,15 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, 'First name is required!'],
         trim: true,
-        min: [1, 'First name must be at least 1 character long'],
-        max: [64, 'First name can be at most 64 characters long']
+        minLength: [1, 'First name must be at least 1 character long'],
+        maxLength: [64, 'First name can be at most 64 characters long']
     },
-    surname: { 
+    surname: {
         type: String,
         trim: true,
         required: [true, 'Last name is required!'],
-        min: [1, 'Last name must be at least 1 character long'],
-        max: [64, 'Last name can be at most 64 characters long']
+        minLength: [1, 'Last name must be at least 1 character long'],
+        maxLength: [64, 'Last name can be at most 64 characters long']
     },
     gender: {
         type: String,
@@ -72,8 +72,8 @@ const UserSchema = new mongoose.Schema({
         unique: true,
         trim: true,
         match: [/^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z.-]{2,}$/, 'Please enter a valid email address'],
-        min: [6, 'E-mail must be at least 6 character long'],
-        max: [128, 'E-mail can be at most 128 characters long']
+        minLength: [6, 'E-mail must be at least 6 character long'],
+        maxLength: [128, 'E-mail can be at most 128 characters long']
     },
     phone: {
         type: String,
@@ -144,7 +144,6 @@ UserSchema.statics.register = async function (data) {
         interests,
         matches: []
     });
-
     return user.save();
 };
 

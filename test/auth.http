@@ -1,0 +1,58 @@
+@server = localhost:3000
+@api_path = api
+@api_version = 1
+@url = http://{{server}}/{{api_path}}/v{{api_version}}
+
+# Register
+###############################################
+POST {{url}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "olletherizzler",
+  "password": "12345678",
+  "repeatPassword": "12345678",
+  "firstName": "Olle",
+  "surname": "Persson",
+  "email" : "wefwef@email.email",
+  "phone" : "1204535",
+  "age" : 12,
+  "location" : "hemma hos din mamma",
+  "gender" : "man",
+  "interests": [
+  "699028142f181028ff3b559c",
+  "699028142f181028ff3b559b",
+  "699028142f181028ff3b559d",
+  "699028142f181028ff3b559e",
+  "699028142f181028ff3b559f"
+]
+
+}
+
+###############################################
+# Login user
+###############################################
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "olletherizzler",
+  "password": "12345678"
+}
+###############################################
+
+###############################################
+# Login admin
+###############################################
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin1",
+  "password": "admin1"
+}
+###############################################
+# Logout
+###############################################
+GET {{url}}/auth/logout
+###############################################

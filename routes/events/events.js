@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const Event = require("../../models/event") 
 const reqAuth = require("../../middleware/auth")
+const reqAdmin = require("../../middleware/adminAuth")
 
 // Get all events. Only send lists if authenticated, otherwise just events info
 router.get("/", async (req, res) => {
-
     try {
         const query = Event.find();
         if (!req.session?.user) {
@@ -38,7 +38,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // post event
-router.post("/", async (req, res) => {
+router.post("/", reqAdmin,async (req, res) => {
     try {
         const { title, description, date, location, maxSpots } = req.body;
         const eventDate = new Date(date);
@@ -70,6 +70,19 @@ router.post("/", async (req, res) => {
         res.status(201).json(event);
     } catch (error) {
         res.status(500).json({error: "Failed to create event"});
+    }
+});
+
+router.delete("/:id",reqAdmin, async (req, res) => {
+    const {id} = req.params;
+    try {
+        const event = await Event.findById(id);
+        if (!event) return res.status(404).json({ error: "Event not found" });
+
+        await Event.delete(id)
+        res.status(200).json({ message: "Event deleted", event });
+    } catch (error) {
+        res.status(500).json({error: "Failed to delete event"});
     }
 });
 

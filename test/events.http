@@ -41,3 +41,7 @@ Content-Type: application/json
 	"maxSpots": 40
 }
 ###############################################
+
+// Delete event
+DELETE {{url}}/events/699308297d4e47570dbadcc9
+###############################################
