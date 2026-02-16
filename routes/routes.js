@@ -7,6 +7,7 @@ const interestRoutes = require("./interests/interests");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
+router.use("/events", eventRoutes)
 router.use("/interests", interestRoutes);
 
 router.use((req, res) => {
