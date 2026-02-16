@@ -1,0 +1,19 @@
+@server = localhost:3000
+@api_path = api
+@api_version = 1
+@url = http://{{server}}/{{api_path}}/v{{api_version}}
+
+# collects all users should return all users.
+###############################################
+GET {{url}}/users
+###############################################
+
+# Collects one user should return admin 1
+###############################################
+GET {{url}}/users/698ee3cdc55f2bea2a95ae3a
+###############################################
+
+# Collects one user that does not exist should return 404
+###############################################
+GET {{url}}/users/599121f034abc3c1f3dd892f
+###############################################
