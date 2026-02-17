@@ -27,12 +27,21 @@ router.post("/", async (req, res) => {
       if (!user || !(await verifyPassword(user.password, password))) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
+
         req.session.user = {
             id: user._id,
             username: user.username,
             isAdmin: user.isAdmin,
         };
-      res.status(200).json({ message: "Login successful" });
+
+        return res.status(200).json({
+            message: "Login successfull",
+            user: {
+                userId: user._id,
+                username: user.username,
+                isAdmin: user.isAdmin
+            }
+        });
     } catch (err) {
         return res.status(500).json({ error: "Something went wrong" });
     }
