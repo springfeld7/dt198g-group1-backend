@@ -96,15 +96,15 @@ EventSchema.statics.createEvent = async function(title,description, date, locati
  * @throws {Error} Throws an error if the user is already registered.
  */
 EventSchema.statics.registerForEvent = async function(event,userId,gender) {
-    const test = await this.alreadyRegisterForEvent(event,userId,gender)
+    const registered = await this.alreadyRegisterForEvent(event,userId,gender)
 
-    if (test.alreadyRegistered) {
+    if (registered.alreadyRegistered) {
         throw new Error("User already registered");
     }
 
     return this.findByIdAndUpdate(
         new mongoose.Types.ObjectId(event.id),
-        {$addToSet: {[test.field]: new mongoose.Types.ObjectId(userId)}},
+        {$addToSet: {[registered.field]: new mongoose.Types.ObjectId(userId)}},
         {returnDocument: "after"}
     );
 }
@@ -119,16 +119,37 @@ EventSchema.statics.registerForEvent = async function(event,userId,gender) {
  * @throws {Error} Throws an error if the user is not currently registered.
  */
 EventSchema.statics.unRegisterForEvent = async function(event,userId,gender) {
-    const test = await this.alreadyRegisterForEvent(event,userId,gender)
+    const registered = await this.alreadyRegisterForEvent(event,userId,gender)
 
-    if (!test.alreadyRegistered) {
+    if (!registered.alreadyRegistered) {
         throw new Error("User already unregistered");
     }
 
     return this.findByIdAndUpdate(
         new mongoose.Types.ObjectId(event.id),
-        {$pull: {[test.field]: new mongoose.Types.ObjectId(userId)}},
+        {$pull: {[registered.field]: new mongoose.Types.ObjectId(userId)}},
         {returnDocument: "after"}
+    );
+}
+
+/**
+ * Updates an existing event in the database.
+ *
+ * @param {EventDocument} event - The Mongoose event document that must already exist.
+ * @param {Object} updateFields - Fields to update.
+ * @param {string} [updateFields.title] - New title.
+ * @param {string} [updateFields.description] - New description.
+ * @param {Date} [updateFields.date] - New date.
+ * @param {string} [updateFields.location] - New location.
+ * @param {number} [updateFields.maxSpots] - New maxSpots.
+ *
+ * @returns {Promise<EventDocument>} Resolves to the updated event document.
+ */
+EventSchema.statics.updateEvent = async function(event,updateFields) {
+    return this.findByIdAndUpdate(
+        event.id,
+        { $set: updateFields },
+        { new: true, runValidators: true }
     );
 }
 

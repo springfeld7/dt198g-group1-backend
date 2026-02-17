@@ -121,7 +121,12 @@ router.delete("/:id/register", async (req, res) => {
  * This route posts a new event to the database.
  * It returns the event in a JSON file.
  *
- * @param {object} body - Request body object containing title,description, location and maxSpots
+ * @param {Object} body - Request body
+ * @param {string} body.title - The name of the event
+ * @param {string} body.description - The event description
+ * @param {Date} body.date - The event date
+ * @param {string} body.location - The event location
+ * @param {number} body.maxSpots - Maximum number of participants (must be >= 1)
  *
  * @returns {json} 201 - JSON object of the created event
  * @returns {error} 409 - event already exist
@@ -151,8 +156,44 @@ router.post("/", reqAdmin, async (req, res) => {
 });
 
 /**
+ * @route PUT /events
+ * @desc Updates an event in the database
+ *
+ * This route updates an event to the database.
+ * It returns the updated event in a JSON file.
+ *
+ * @param {string} id.path.required - The id of the event to update
+ *
+ * @param {Object} body.required - Event update object
+ * @param {string} body.title - The name of the event
+ * @param {string} body.description - The event description
+ * @param {Date} body.date - The event date
+ * @param {string} body.location - The event location
+ * @param {number} body.maxSpots - Maximum number of participants (>= 1)
+ *
+ * @returns {json} 200 - JSON object of the updated event
+ * @returns {error} 404 - event not found
+ * @returns {Error} 500 - Internal server error from reading the database
+ */
+router.put("/:id", reqAdmin, async (req, res) => {
+    try {
+        const {id} = req.params;
+        const event = await Event.getEventById(id);
+
+        if (!event) {
+            return res.status(404).json({error: "Event not found"});
+        }
+        const updatedEvent = await Event.updateEvent(event,req.body);
+
+        res.status(200).json(updatedEvent);
+    } catch (error) {
+        res.status(500).json({error: "Failed to update event"});
+    }
+});
+
+/**
  * @route DELETE /events/:id
- * @desc deletes a event from the database
+ * @desc deletes an event from the database
  *
  * This route deletes an event from the database.
  * It returns the event in a JSON file.
