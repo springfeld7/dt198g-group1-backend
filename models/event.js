@@ -51,7 +51,7 @@ const EventSchema = new mongoose.Schema({
  * @returns {Promise<Array<EventDocument>>} A Promise that resolves to an array of Mongoose Event documents.
  */
 EventSchema.statics.getEvents = async function() {
-    return await this.find()
+    return this.find()
 }
 
 /**
@@ -73,12 +73,12 @@ EventSchema.statics.getEventById = async function(id) {
  * @returns {Promise<EventDocument>} A Promise that resolves to the newly created Mongoose Event document.
  */
 EventSchema.statics.createEvent = async function(title,description, date, location, maxSpots) {
-    return await this.create({
-        title : title,
-        description : description,
-        date: date,
+    return this.create({
+        title,
+        description,
+        date,
         location,
-        maxSpots : maxSpots,
+        maxSpots,
         registeredMen: [],
         registeredWomen: [],
         pairsFirstRound: [],
@@ -102,7 +102,7 @@ EventSchema.statics.registerForEvent = async function(event,userId,gender) {
         throw new Error("User already registered");
     }
 
-    return await this.findByIdAndUpdate(
+    return this.findByIdAndUpdate(
         new mongoose.Types.ObjectId(event.id),
         {$addToSet: {[test.field]: new mongoose.Types.ObjectId(userId)}},
         {returnDocument: "after"}
@@ -125,13 +125,18 @@ EventSchema.statics.unRegisterForEvent = async function(event,userId,gender) {
         throw new Error("User already unregistered");
     }
 
-    return await this.findByIdAndUpdate(
+    return this.findByIdAndUpdate(
         new mongoose.Types.ObjectId(event.id),
         {$pull: {[test.field]: new mongoose.Types.ObjectId(userId)}},
         {returnDocument: "after"}
     );
 }
 
+/**
+ * Deletes an event
+ * @param id the id of the event to be deleted
+ * @returns {Promise<EventDocument>} A Promise that resolves to the deleted Mongoose event document
+ */
 EventSchema.statics.delete = async function(id) {
     return this.findByIdAndDelete(id);
 }

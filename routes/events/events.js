@@ -48,7 +48,7 @@ router.get("/:id", async (req, res) => {
     try {
         const event = await Event.getEventById(id);
         if (!event) {
-            return res.status(404).json({message: "event not found"})
+            return res.status(404).json({error: "event not found"})
         }
         res.status(200).json(event);
     } catch (error) {
