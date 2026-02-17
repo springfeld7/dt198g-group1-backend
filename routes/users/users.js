@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const User = require("../../models/user");
 const requireAuth = require("../../middleware/auth");
+const fs = require("fs");
+const path = require("path");
 
 router.use(requireAuth);
 
@@ -42,10 +44,44 @@ router.get("/:id", async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.json(user);
+        const userWithImg = user.toObject();
+        userWithImg.img = `/resources/img/users/${user._id}.jpg`;
+
+        res.json(userWithImg);
     }
     catch (error) {
         res.status(500).json({error: "Failed to fetch user"});
+    }
+});
+
+/**
+ * @route GET /users/:id/pictures
+ * @desc Retrieve the profile picture of the user with the provided id
+ * 
+ * This route fetches the profile picture stored in the `resources/img/users/` folder.
+ * It checks if the user is authenticated and whether the picture exists.
+ * 
+ * @param {string} id - User ID passed in the URL
+ * 
+ * @returns {file} 200 - Returns the profile picture image file if found
+ * @returns {json} 404 - Error message if the image is not found
+ * @returns {json} 500 - Internal server error if trouble reading the file
+ */
+router.get("/:id/pictures", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const imgPath = path.join(__dirname, "../../resources/img/users", `${id}.jpg`);
+
+        fs.stat(imgPath, (err, stats) => {
+            if (err || !stats.isFile()) {
+                return res.status(404).json({ error: "Profile picture not found" });
+            }
+
+            res.sendFile(imgPath);
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
     }
 })
 
