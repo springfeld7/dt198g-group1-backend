@@ -7,7 +7,6 @@ const { BASE_URL } = require("./config");
 const db = require("./db-handler");
 const routes = require("./routes/routes");
 const path = require("path");
-const requireAuth = require("./middleware/auth");
 
 dotenv.config();
 
