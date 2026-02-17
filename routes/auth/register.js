@@ -51,7 +51,7 @@ const registerUserHandler = async (req, res) => {
         res.status(201).json({ message: "User registered successfully", user: safeUser });
 
     } catch (err) {
-        res.status(400).json({ error: "Failed to register" });
+        res.status(400).json({ error: err.message });
     }
 };
 

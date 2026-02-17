@@ -125,10 +125,15 @@ UserSchema.statics.register = async function (data) {
         interests
     } = data;
 
-    const userExists = await this.findOne({ username });
+    const userExists = await this.findOne({
+        $or: [
+            { username: username },
+            { email: email }
+        ]
+    });
 
     if (userExists) {
-        throw new Error('Username already exists');
+        throw new Error('Username  or email already exists');
     }
 
     const user = new this({
