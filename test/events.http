@@ -41,3 +41,25 @@ Content-Type: application/json
 	"maxSpots": 40
 }
 ###############################################
+
+// Delete event
+DELETE {{url}}/events/69932bbc083c3a2d89f3aa5b
+###############################################
+
+
+###############################################
+
+// Register for event
+POST {{url}}/events/698ef39bc55f2bea2a95ae59/register
+Content-Type: application/json
+
+###############################################
+
+
+###############################################
+
+// unregister for event
+DELETE {{url}}/events/698ef39bc55f2bea2a95ae59/register
+Content-Type: application/json
+
+###############################################

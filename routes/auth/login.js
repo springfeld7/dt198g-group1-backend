@@ -21,26 +21,29 @@ router.get("/", (req, res) => {
 router.post("/", async (req, res) => {
     try {
       const { username, password } = req.body;
-
       // Check if the user exists in the database
       const user = await User.findOne({ username });
-
       // If no user found or the password doesn't match, return an error
       if (!user || !(await verifyPassword(user.password, password))) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      // If successful, return the user data
-      return res.status(200).json({
-        message: "Login successfull",
-        user: {
-          userId: user._id,
-          username: user.username,
-          isAdmin: user.isAdmin,
-        },
-      });
+        req.session.user = {
+            id: user._id,
+            gender: user.gender,
+            username: user.username,
+            isAdmin: user.isAdmin,
+        };
+
+        return res.status(200).json({
+            message: "Login successfull",
+            user: {
+                userId: user._id,
+                username: user.username,
+                isAdmin: user.isAdmin
+            }
+        });
     } catch (err) {
-        console.error(err);
         return res.status(500).json({ error: "Something went wrong" });
     }
 });
