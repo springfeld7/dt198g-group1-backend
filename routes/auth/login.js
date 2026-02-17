@@ -30,6 +30,7 @@ router.post("/", async (req, res) => {
 
         req.session.user = {
             id: user._id,
+            gender: user.gender,
             username: user.username,
             isAdmin: user.isAdmin,
         };

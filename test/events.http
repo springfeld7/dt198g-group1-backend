@@ -43,5 +43,23 @@ Content-Type: application/json
 ###############################################
 
 // Delete event
-DELETE {{url}}/events/699308297d4e47570dbadcc9
+DELETE {{url}}/events/69932bbc083c3a2d89f3aa5b
+###############################################
+
+
+###############################################
+
+// Register for event
+POST {{url}}/events/698ef39bc55f2bea2a95ae59/register
+Content-Type: application/json
+
+###############################################
+
+
+###############################################
+
+// unregister for event
+DELETE {{url}}/events/698ef39bc55f2bea2a95ae59/register
+Content-Type: application/json
+
 ###############################################
