@@ -1,0 +1,26 @@
+@server = localhost:3000
+@api_path = api
+@api_version = 1
+@url = http://{{server}}/{{api_path}}/v{{api_version}}
+
+# Login
+##################################
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "katherine",
+  "password": "Katherine"
+}
+##################################
+# Get profile picture
+##################################
+GET {{url}}/users/69939c73879f9f04d4e38197/pictures
+##################################
+# Get profile picture with invalid id
+##################################
+GET {{url}}/users/69939c73879f9f0/pictures
+##################################
+# Logout
+##################################
+POST {{url}}/auth/logout
