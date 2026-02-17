@@ -39,4 +39,8 @@ EventSchema.statics.getEventById = async function(id) {
     return this.findById(id)
 }
 
+EventSchema.statics.delete = async function(id) {
+    return this.findByIdAndDelete(id);
+}
+
 module.exports = mongoose.model('Event', EventSchema);
