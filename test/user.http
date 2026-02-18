@@ -18,6 +18,37 @@ GET {{url}}/users/698ee3cdc55f2bea2a95ae3a
 GET {{url}}/users/599121f034abc3c1f3dd892f
 ###############################################
 
+# Updates a users information
+###############################################
+PUT {{url}}/users/
+Content-Type: application/json
+
+{
+  "username": "oloftherizzler",
+  "password": "123456789",
+  "repeatPassword": "123456789",
+  "firstName": "Olof",
+  "surname": "Andersson",
+  "email" : "updatedEmail0@email.email",
+  "phone" : "12547",
+  "age" : 18,
+  "location" : "de du",
+  "gender" : "man",
+  "interests": [
+  "699028142f181028ff3b559c",
+  "699028142f181028ff3b559b",
+  "699028142f181028ff3b559d",
+  "699028142f181028ff3b559e",
+  "699028142f181028ff3b559f"
+]
+
+}
+###############################################
+# Collects the users matches
+###############################################
+GET {{url}}/users/69930a892f0d8576ade5ba9d/matches
+###############################################
+
 # Collects the users matches
 ###############################################
 GET {{url}}/users/69930a892f0d8576ade5ba9d/matches

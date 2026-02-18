@@ -9,7 +9,7 @@ POST {{url}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "olletherizzler",
+  "username": "oloftherizzler69420",
   "password": "12345678",
   "repeatPassword": "12345678",
   "firstName": "Olle",
@@ -36,8 +36,8 @@ POST {{url}}/auth/login
 Content-Type: application/json
 
 {
-  "username": "olletherizzler",
-  "password": "12345678"
+  "username": "oloftherizzler",
+  "password": "123456789"
 }
 ###############################################
 
