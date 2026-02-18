@@ -25,7 +25,7 @@ Content-Type: application/json
 	"description": "An evening of quick rounds and great conversations.",
 	"date": "2026-03-01T18:30:00.000Z",
 	"location": "Community Hall",
-	"maxSpots": 40
+	"maxSpots": 60
 }
 ###############################################
 
@@ -44,6 +44,20 @@ Content-Type: application/json
 
 // Delete event
 DELETE {{url}}/events/69932bbc083c3a2d89f3aa5b
+###############################################
+// Update event
+###############################################
+
+PUT {{url}}/events/6991dce013ded751d7a90d2f
+Content-Type: application/json
+
+{
+  "title": "Ändrat namn",
+  "description": "updated desc.",
+  "date": "2026-04-01T18:30:00.000Z",
+  "location": "Community ändrat hall",
+  "maxSpots": 60
+}
 ###############################################
 
 
