@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
+const requestLogger = require("./middleware/request-logger");
 const MongoStore = require("connect-mongo").default || require("connect-mongo");
 const dotenv = require("dotenv");
 const { BASE_URL } = require("./config");
@@ -40,6 +41,8 @@ app.use(
     },
   }),
 );
+
+app.use(requestLogger);
 
 app.use(BASE_URL, routes);
 
