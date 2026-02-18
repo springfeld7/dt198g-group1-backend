@@ -49,4 +49,25 @@ router.get("/:id", async (req, res) => {
     }
 })
 
+/**
+ * @route GET /users/:id/matches
+ * @desc Retrieve the matches for the user matching the id
+ *
+ * This route fetches a users matches stored within the database matching the id provided.
+ * It returns the users matches in a JSON file.
+ *
+ * @returns {json} 200 - JSON object of the users matches
+ * @returns {Error} 500 - Internal server error if reading the database fails
+ */
+router.get("/:id/matches", async (req, res) => {
+    const {id} = req.params;
+    try {
+        const matches = await User.getMatches(id)
+        res.json(matches);
+    }
+    catch (error) {
+        res.status(500).json({error: "Failed to fetch matches"});
+    }
+})
+
 module.exports = router;

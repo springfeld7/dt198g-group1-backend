@@ -169,4 +169,21 @@ UserSchema.statics.getUserById = async function(id) {
     return this.findById(id).select('-password');
 };
 
+/**
+ * Returns a user matches
+ * @param {string} id - The id of the user
+ * @returns {Promise<*[]>} The user matches
+ */
+UserSchema.statics.getMatches = async function(id) {
+    const user = await this.findById(id)
+        .populate({
+            path: "matches",
+            select: "firstName surname age interests phone email"
+        })
+        .select("matches -_id")
+        .lean();
+
+    return user?.matches || [];
+};
+
 module.exports = mongoose.model('User', UserSchema);
