@@ -125,16 +125,7 @@ UserSchema.statics.register = async function (data) {
         interests
     } = data;
 
-    const userExists = await this.findOne({
-        $or: [
-            { username: username },
-            { email: email }
-        ]
-    });
-
-    if (userExists) {
-        throw new Error('Username  or email already exists');
-    }
+    await this.infoExist(username, email)
 
     const user = new this({
         username,
@@ -159,6 +150,34 @@ UserSchema.statics.register = async function (data) {
 UserSchema.statics.getUsers = async function() {
     return this.find().select('-password');
 };
+
+/**
+ * Updates a user with the given data.
+ * @param {string} id The ID of the user to update.
+ * @param {Object} data The fields to update.
+ * @param {string} [hashedPassword] Optional hashed password to update.
+ * @returns {Promise<mongoose.Document>} The updated user document.
+ * @throws {Error} Throws if the user is not found or username/email already exists.
+ */
+UserSchema.statics.updateUser = async function(id, data,hashedPassword) {
+    await this.infoExist(data.username, data.email)
+
+
+    const updateFields = {
+        ...data,
+        ...(hashedPassword && { password: hashedPassword })
+    };
+
+    const updatedUser = await this.findByIdAndUpdate(
+        id,
+        { $set: updateFields },
+        { new: true, runValidators: true }
+    ).lean();
+
+    if (!updatedUser) throw new Error("User not found");
+
+    return updatedUser;
+}
 
 /**
  * Returns a user by ID
@@ -190,5 +209,47 @@ UserSchema.statics.getMatches = async function(id) {
         img: `/resources/img/users/${match._id}.jpg`
     }));
 };
+
+/**
+ * Returns a user matches
+ * @param {string} id - The id of the user
+ * @returns {Promise<*[]>} The user matches
+ */
+UserSchema.statics.getMatches = async function(id) {
+    const user = await this.findById(id)
+        .populate({
+            path: "matches",
+            select: "firstName surname age interests phone email"
+        })
+        .select("matches -_id")
+        .lean();
+
+    if (!user) return [];
+
+    return user.matches.map(match => ({
+        ...match,
+        img: `/resources/img/users/${match._id}.jpg`
+    }));
+};
+
+/**
+ * Checks if a username or email already exists in the database.
+ * @param {string} username The username to check.
+ * @param {string} email The email to check.
+ * @returns {Promise<void>} Resolves if username/email are available.
+ * @throws {Error} Throws if a user with the given username or email already exists.
+ */
+UserSchema.statics.infoExist = async function(username,email) {
+    const userExists = await this.findOne({
+        $or: [
+            { username: username },
+            { email: email }
+        ]
+    });
+
+    if (userExists) {
+        throw new Error('Username  or email already exists');
+    }
+}
 
 module.exports = mongoose.model('User', UserSchema);

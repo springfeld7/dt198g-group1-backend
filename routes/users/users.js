@@ -4,6 +4,7 @@ const User = require("../../models/user");
 const requireAuth = require("../../middleware/auth");
 const fs = require("fs");
 const path = require("path");
+const {hashPassword} = require("../../utils/password-hasher");
 
 router.use(requireAuth);
 
@@ -23,6 +24,32 @@ router.get("/", async (req, res) => {
         res.json(users);
     } catch (err) {
         res.status(500).json({error: "Failed to fetch users"});
+    }
+});
+
+/**
+ * @route PUT /users/
+ * @desc Updates a users in the database
+ *
+ * This route updates a user stored within the database.
+ * It returns the updated users in a JSON file.
+ *
+ * @returns {json} 200 - JSON object of the updated user
+ * @returns {json} 400 - If passwords are not matching
+ * @returns {Error} 500 - Internal server error if reading the database fails
+ */
+router.put("/", async (req, res) => {
+    try {
+        if (req.body.password !== req.body.repeatPassword) {
+            return res.status(400).json({ error: "Passwords do not match" });
+        }
+        const hashedPassword = await hashPassword(req.body.password.trim());
+
+        const users = await User.updateUser(req.session.user.id,req.body,hashedPassword);
+
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({error: error.message});
     }
 });
 
