@@ -166,7 +166,11 @@ UserSchema.statics.getUsers = async function() {
  * @returns {Promise<mongoose.Document|null>} The user object or null
  */
 UserSchema.statics.getUserById = async function(id) {
-    return this.findById(id).select('-password');
+    return this.findById(id)
+         .populate({
+             path: "interests",
+             select: "name"
+         }).select("-password");
 };
 
 /**
