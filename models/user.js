@@ -183,7 +183,12 @@ UserSchema.statics.getMatches = async function(id) {
         .select("matches -_id")
         .lean();
 
-    return user?.matches || [];
+    if (!user) return [];
+
+    return user.matches.map(match => ({
+        ...match,
+        img: `/resources/img/users/${match._id}.jpg`
+    }));
 };
 
 module.exports = mongoose.model('User', UserSchema);
