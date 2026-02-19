@@ -1,0 +1,17 @@
+@server = localhost:3000
+@api_path = api
+@api_version = 1
+@url = http://{{server}}/{{api_path}}/v{{api_version}}
+
+# collects a review from the database
+###############################################
+GET {{url}}/reviews
+Content-Type: application/json
+
+{
+  "eventId": "698ef39bc55f2bea2a95ae59",
+  "round": 1,
+  "dateId": "69939c73879f9f04d4e38197"
+
+}
+###############################################
