@@ -3,6 +3,7 @@ const router = express.Router();
 
 const authRoutes = require("./auth/auth");
 const userRoutes = require("./users/users");
+const eventRoutes = require("./events/events");
 const interestRoutes = require("./interests/interests");
 const questionRoutes = require("./questions/questions");
 const eventRoutes = require("./events/events");
