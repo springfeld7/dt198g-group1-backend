@@ -48,11 +48,11 @@ POST {{url}}/auth/login
 Content-Type: application/json
 
 {
-  "username": "admin1",
-  "password": "admin1"
+  "username": "admin2",
+  "password": "admin2"
 }
 ###############################################
 # Logout
 ###############################################
-GET {{url}}/auth/logout
+POST {{url}}/auth/logout
 ###############################################

@@ -6,9 +6,6 @@ const userRoutes = require("./users/users");
 const eventRoutes = require("./events/events");
 const interestRoutes = require("./interests/interests");
 const questionRoutes = require("./questions/questions");
-const eventRoutes = require("./events/events");
-
-
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
