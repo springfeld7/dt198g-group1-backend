@@ -202,13 +202,9 @@ UserSchema.statics.getMatches = async function(id) {
     const user = await this.findById(id)
         .populate({
             path: "matches",
-            select: "firstName surname age interests phone email",
-            populate: {
-                path: "interests",
-                select: "name"
-            }
+            select: "firstName surname phone email"
         })
-        .select("matches -_id")
+        .select("matches")
         .lean();
 
     if (!user) return [];
