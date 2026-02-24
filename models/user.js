@@ -1,3 +1,4 @@
+const { populate } = require('dotenv');
 const mongoose = require('mongoose');
 
 /**
@@ -201,7 +202,11 @@ UserSchema.statics.getMatches = async function(id) {
     const user = await this.findById(id)
         .populate({
             path: "matches",
-            select: "firstName surname age interests phone email"
+            select: "firstName surname age interests phone email",
+            populate: {
+                path: "interests",
+                select: "name"
+            }
         })
         .select("matches -_id")
         .lean();
