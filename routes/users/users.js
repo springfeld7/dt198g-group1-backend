@@ -167,11 +167,6 @@ router.patch("/:id/matches/seen", async (req, res) => {
  * @returns {Error} 500 - Internal server error if database update fails
  */
 router.delete("/matches/:id", async (req, res) => {
-
-    if (!req.user || !req.user.id) {
-        return res.status(401).json({ error: "Unauthorized - user not authenticated" });
-    }
-
     const userId = req.user.id;
     const matchId = req.params.id;
 
