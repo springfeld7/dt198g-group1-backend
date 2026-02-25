@@ -3,6 +3,8 @@ const router = express.Router();
 const Event = require("../../models/event")
 const reqAuth = require("../../middleware/auth")
 const reqAdmin = require("../../middleware/adminAuth")
+const path = require("path");
+const fs = require("fs");
 
 router.use(reqAuth);
 /**
@@ -52,9 +54,38 @@ router.get("/:id", async (req, res) => {
         }
         res.status(200).json(event);
     } catch (error) {
-        res.status(500).json({error: "Failed to fetch event"});
+        res.status(500).json({error:error.message});
     }
 });
+
+/**
+ * @route GET /events/:id/pictures
+ * @desc Retrieve the picture of the event with the provided id
+ *
+ * This route fetches the event picture stored in the `resources/img/event/` folder.
+ *
+ * @param {string} id - Event ID passed in the URL
+ *
+ * @returns {file} 200 - Returns the event picture image file if found
+ * @returns {json} 404 - Error message if the image is not found
+ * @returns {json} 500 - Internal server error if trouble reading the file
+ */
+router.get("/:id/pictures", async (req, res) => {
+    const {id} = req.params;
+    try {
+        const imgPath = path.join(__dirname, "../../resources/img/events", `${id}.jpg`);
+
+        fs.stat(imgPath, (err, stats) => {
+            if (err || !stats.isFile()) {
+                return res.status(404).json({ error: "Event picture not found" });
+            }
+            res.sendFile(imgPath);
+            });
+        } catch (error) {
+            res.status(500).json({ error: "Internal server error" });
+        }
+})
+
 
 /**
  * @route POST /events/:id/register
