@@ -41,9 +41,9 @@ const EventSchema = new mongoose.Schema({
     maxSpots : {type: Number, required: true,min: 1},
     registeredMen: {type: [objectIdRef], default: []},
     registeredWomen : {type: [objectIdRef], default: []},
-    pairsFirstRound: { type: [[objectIdRef]], default: []},
-    pairsSecondRound: { type: [[objectIdRef]], default: []},
-    pairsThirdRound: { type: [[objectIdRef]], default: []},
+    pairsFirstRound: [ { type: Schema.Types.ObjectId, ref: 'Match' } ],
+    pairsSecondRound: [ { type: Schema.Types.ObjectId, ref: 'Match' } ],
+    pairsThirdRound: [ { type: Schema.Types.ObjectId, ref: 'Match' } ],
 })
 
 /**
@@ -53,7 +53,6 @@ const EventSchema = new mongoose.Schema({
 EventSchema.statics.getEvents = async function() {
     return this.find()
 }
-
 /**
  * Returns an event from the database
  * @param id the id of the event requested
