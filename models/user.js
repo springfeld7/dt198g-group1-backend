@@ -17,7 +17,10 @@ const mongoose = require('mongoose');
  * @property {String} phone - The phone number of the user.
  * @property {String} location - The location of the user.
  * @property {mongoose.Types.ObjectId[]} interests - References to Interest documents associated with the user.
- * @property {mongoose.Types.ObjectId[]} matches - References to other User documents matched with this user.
+ * @property {Object[]} matches - Array of match objects containing metadata.
+ * @property {mongoose.Types.ObjectId} matches.user - Reference to the matched User document.
+ * @property {Boolean} matches.isSeen - Whether the user has viewed this specific match.
+ * @property {Date} matches.matchedAt - The timestamp when the match was created.
  */
 const UserSchema = new mongoose.Schema({
     
@@ -90,8 +93,19 @@ const UserSchema = new mongoose.Schema({
         ref: 'Interest'
     }],
     matches: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        isSeen: {
+            type: Boolean,
+            default: false
+        },
+        matchedAt: {
+            type: Date,
+            default: Date.now
+        }
     }]
 });
 
@@ -200,8 +214,8 @@ UserSchema.statics.getUserById = async function(id) {
 UserSchema.statics.getMatches = async function(id) {
     const user = await this.findById(id)
         .populate({
-            path: "matches",
-            select: "firstName surname age interests phone email"
+            path: "matches.user",
+            select: "firstName surname phone email"
         })
         .select("matches -_id")
         .lean();
@@ -209,9 +223,22 @@ UserSchema.statics.getMatches = async function(id) {
     if (!user) return [];
 
     return user.matches.map(match => ({
-        ...match,
-        img: `/resources/img/users/${match._id}.jpg`
+        ...match.user,
+        isSeen: match.isSeen,
+        matchedAt: match.matchedAt,
+        img: `/resources/img/users/${match.user._id}.jpg`
     }));
+};
+
+/**
+ * Marks all matches of a specific user as seen.
+ * @param {string} userId - The ID of the user whose matches are being viewed.
+ */
+UserSchema.statics.markMatchesAsSeen = async function(userId) {
+    return this.updateOne(
+        { _id: userId },
+        { $set: { "matches.$[].isSeen": true } }
+    );
 };
 
 /**

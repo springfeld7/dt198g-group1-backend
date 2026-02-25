@@ -40,7 +40,8 @@ router.post("/", async (req, res) => {
             user: {
                 userId: user._id,
                 username: user.username,
-                isAdmin: user.isAdmin
+                isAdmin: user.isAdmin,
+                gender: user.gender
             }
         });
     } catch (err) {
