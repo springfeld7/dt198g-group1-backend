@@ -154,4 +154,33 @@ router.patch("/:id/matches/seen", async (req, res) => {
     }
 })
 
+/**
+ * @route DELETE /api/v1/users/matches/:id
+ * @desc Remove a specific match for an authenticated user
+ *
+ * This route identifies the authenticated user via the session (req.user.id)
+ * and removes the match ID provided in the payload from their matches array.
+ *
+ * @returns {json} 200 - Success message
+ * @returns {Error} 401 - Unauthorized if user not authenticated
+ * @returns {Error} 400 - Invalid ID payload
+ * @returns {Error} 500 - Internal server error if database update fails
+ */
+router.delete("/matches/:id", async (req, res) => {
+    const userId = req.user.id;
+    const matchId = req.params.id;
+
+    try {
+        const result = await User.removeMatch(userId, matchId);
+        
+        if (result.modifiedCount === 0) {
+            return res.status(400).json({ error: "Match not found" });
+        }
+
+        res.status(200).json({ message: "Match was successfully deleted" });
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 module.exports = router;
