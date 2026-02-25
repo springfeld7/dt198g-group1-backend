@@ -6,8 +6,8 @@ const {Schema} = require("mongoose");
  * This schema defines the structure of matches in the database.
  *
  * @schema MatchShema
- * @property {String} man - The male participant
- * @property {String} women - The woman participant
+ * @property {ObjectId} man - The male participant
+ * @property {ObjectId} women - The woman participant
  * @property {mongoose.Types.ObjectId[]} reviews - References to review documents
  */
 const MatchSchema = new mongoose.Schema({
