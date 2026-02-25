@@ -242,6 +242,19 @@ UserSchema.statics.markMatchesAsSeen = async function(userId) {
 };
 
 /**
+ * Removes a match from the user's matches array.
+ * @param {string} userId - The ID of the user.
+ * @param {string} matchId - The ID of the match to be removed.
+ * @returns {Promise}
+ */
+UserSchema.statics.removeMatch = async function(userId, matchId) {
+    return this.updateOne(
+        { _id: userId },
+        { $pull: { matches: { user: matchId } } }
+    );
+};
+
+/**
  * Checks if a username or email already exists in the database.
  * @param {string} username The username to check.
  * @param {string} email The email to check.
