@@ -133,4 +133,25 @@ router.get("/:id/matches", async (req, res) => {
     }
 })
 
+/**
+ * @route PATCH /users/:id/matches/seen
+ * @desc Mark all matches as seen for the user matching the id
+ *
+ * This route updates the matches for a user in the database matching the id provided,
+ * setting the isSeen status of all their matches to true.
+ *
+ * @returns {json} 200 - Success message
+ * @returns {Error} 500 - Internal server error if updating the database fails
+ */
+router.patch("/:id/matches/seen", async (req, res) => {
+    const {id} = req.params;
+    try {
+        await User.markMatchesAsSeen(id);
+        res.json({message: "Matches marked as seen"});
+    }
+    catch (error) {
+        res.status(500).json({error: "Failed to update seen status"});
+    }
+})
+
 module.exports = router;
