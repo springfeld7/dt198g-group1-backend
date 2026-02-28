@@ -6,12 +6,14 @@ const userRoutes = require("./users/users");
 const eventRoutes = require("./events/events");
 const interestRoutes = require("./interests/interests");
 const questionRoutes = require("./questions/questions");
+const reviewRoutes = require("./reviews/reviews")
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/events", eventRoutes)
 router.use("/interests", interestRoutes);
 router.use("/questions", questionRoutes);
+router.use("/review", reviewRoutes);
 
 router.use((req, res) => {
   res.status(404).json({ message: "Endpoint not found" });
