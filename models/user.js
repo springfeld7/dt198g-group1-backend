@@ -17,7 +17,10 @@ const mongoose = require('mongoose');
  * @property {String} phone - The phone number of the user.
  * @property {String} location - The location of the user.
  * @property {mongoose.Types.ObjectId[]} interests - References to Interest documents associated with the user.
- * @property {mongoose.Types.ObjectId[]} matches - References to other User documents matched with this user.
+ * @property {Object[]} matches - Array of match objects containing metadata.
+ * @property {mongoose.Types.ObjectId} matches.user - Reference to the matched User document.
+ * @property {Boolean} matches.isSeen - Whether the user has viewed this specific match.
+ * @property {Date} matches.matchedAt - The timestamp when the match was created.
  */
 const UserSchema = new mongoose.Schema({
     
@@ -90,8 +93,19 @@ const UserSchema = new mongoose.Schema({
         ref: 'Interest'
     }],
     matches: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        isSeen: {
+            type: Boolean,
+            default: false
+        },
+        matchedAt: {
+            type: Date,
+            default: Date.now
+        }
     }]
 });
 
@@ -159,8 +173,8 @@ UserSchema.statics.getUsers = async function() {
  * @returns {Promise<mongoose.Document>} The updated user document.
  * @throws {Error} Throws if the user is not found or username/email already exists.
  */
-UserSchema.statics.updateUser = async function(id, data,hashedPassword) {
-    await this.infoExist(data.username, data.email)
+UserSchema.statics.updateUser = async function(id, data, hashedPassword) {
+    await this.infoExist(data.username, data.email, id)
 
 
     const updateFields = {
@@ -185,7 +199,11 @@ UserSchema.statics.updateUser = async function(id, data,hashedPassword) {
  * @returns {Promise<mongoose.Document|null>} The user object or null
  */
 UserSchema.statics.getUserById = async function(id) {
-    return this.findById(id).select('-password');
+    return this.findById(id)
+         .populate({
+             path: "interests",
+             select: "name"
+         }).select("-password");
 };
 
 /**
@@ -196,8 +214,8 @@ UserSchema.statics.getUserById = async function(id) {
 UserSchema.statics.getMatches = async function(id) {
     const user = await this.findById(id)
         .populate({
-            path: "matches",
-            select: "firstName surname age interests phone email"
+            path: "matches.user",
+            select: "firstName surname phone email"
         })
         .select("matches -_id")
         .lean();
@@ -205,31 +223,35 @@ UserSchema.statics.getMatches = async function(id) {
     if (!user) return [];
 
     return user.matches.map(match => ({
-        ...match,
-        img: `/resources/img/users/${match._id}.jpg`
+        ...match.user,
+        isSeen: match.isSeen,
+        matchedAt: match.matchedAt,
+        img: `/resources/img/users/${match.user._id}.jpg`
     }));
 };
 
 /**
- * Returns a user matches
- * @param {string} id - The id of the user
- * @returns {Promise<*[]>} The user matches
+ * Marks all matches of a specific user as seen.
+ * @param {string} userId - The ID of the user whose matches are being viewed.
  */
-UserSchema.statics.getMatches = async function(id) {
-    const user = await this.findById(id)
-        .populate({
-            path: "matches",
-            select: "firstName surname age interests phone email"
-        })
-        .select("matches -_id")
-        .lean();
+UserSchema.statics.markMatchesAsSeen = async function(userId) {
+    return this.updateOne(
+        { _id: userId },
+        { $set: { "matches.$[].isSeen": true } }
+    );
+};
 
-    if (!user) return [];
-
-    return user.matches.map(match => ({
-        ...match,
-        img: `/resources/img/users/${match._id}.jpg`
-    }));
+/**
+ * Removes a match from the user's matches array.
+ * @param {string} userId - The ID of the user.
+ * @param {string} matchId - The ID of the match to be removed.
+ * @returns {Promise}
+ */
+UserSchema.statics.removeMatch = async function(userId, matchId) {
+    return this.updateOne(
+        { _id: userId },
+        { $pull: { matches: { user: matchId } } }
+    );
 };
 
 /**
@@ -239,17 +261,14 @@ UserSchema.statics.getMatches = async function(id) {
  * @returns {Promise<void>} Resolves if username/email are available.
  * @throws {Error} Throws if a user with the given username or email already exists.
  */
-UserSchema.statics.infoExist = async function(username,email) {
-    const userExists = await this.findOne({
-        $or: [
-            { username: username },
-            { email: email }
-        ]
-    });
+UserSchema.statics.infoExist = async function(username, email, excludeId = null) {
+    const query = {
+        $or: [{ username: username }, { email: email }]
+    };
+    if (excludeId) query._id = { $ne: excludeId };
 
-    if (userExists) {
-        throw new Error('Username  or email already exists');
-    }
+    const userExists = await this.findOne(query);
+    if (userExists) throw new Error('Username or email already exists');
 }
 
 module.exports = mongoose.model('User', UserSchema);
