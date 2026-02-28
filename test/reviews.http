@@ -1,0 +1,22 @@
+@server = localhost:3000
+@api_path = api
+@api_version = 1
+@url = http://{{server}}/{{api_path}}/v{{api_version}}
+
+# Post a review
+##########################################
+POST {{url}}/review
+Content-Type: application/json
+
+{
+    "reviewer": "69939c73879f9f04d4e38186",
+    "eventId": "699ef51d040ff32d59bef37a",
+    "round": 666,
+    "dateId": "69939c73879f9f04d4e38188",
+    "answers": {
+        "6992ef88cd605d760113e407": "q1",
+        "6992f0edcd605d760113e40c": "q2",
+        "6992f118cd605d760113e40e": "q3",
+        "6992f230cd605d760113e40f": "q4"
+    }
+}
