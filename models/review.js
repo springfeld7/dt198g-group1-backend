@@ -21,6 +21,16 @@ const ReviewSchema = new mongoose.Schema({
     answers: {type: Map, of: Schema.Types.Mixed, required: true, default: {}}
 })
 
+/**
+ * This method creates a new review entry in the database.
+ * 
+ * @param {Schema.Types.ObjectId} reviewer - The ID of the reviewer.
+ * @param {Schema.Types.ObjectId} eventId - The ID of the event associated with the review.
+ * @param {number} round - The round of the event.
+ * @param {Schema.Types.ObjectId} dateId - The ID of the user receiving the review.
+ * @param {Map} answers - A map containing question IDs and corresponding answers.
+ * @returns {Promise} Resolves to the created review document.
+ */
 ReviewSchema.statics.createReview = async function(reviewer, eventId, round, dateId, answers) {
     return this.create({
         reviewer,
@@ -29,6 +39,7 @@ ReviewSchema.statics.createReview = async function(reviewer, eventId, round, dat
         dateId,
         answers
     });
-}
+};
+
 
 module.exports = mongoose.model("Review", ReviewSchema);
