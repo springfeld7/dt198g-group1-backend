@@ -173,8 +173,8 @@ UserSchema.statics.getUsers = async function() {
  * @returns {Promise<mongoose.Document>} The updated user document.
  * @throws {Error} Throws if the user is not found or username/email already exists.
  */
-UserSchema.statics.updateUser = async function(id, data,hashedPassword) {
-    await this.infoExist(data.username, data.email)
+UserSchema.statics.updateUser = async function(id, data, hashedPassword) {
+    await this.infoExist(data.username, data.email, id)
 
 
     const updateFields = {
@@ -261,17 +261,14 @@ UserSchema.statics.removeMatch = async function(userId, matchId) {
  * @returns {Promise<void>} Resolves if username/email are available.
  * @throws {Error} Throws if a user with the given username or email already exists.
  */
-UserSchema.statics.infoExist = async function(username,email) {
-    const userExists = await this.findOne({
-        $or: [
-            { username: username },
-            { email: email }
-        ]
-    });
+UserSchema.statics.infoExist = async function(username, email, excludeId = null) {
+    const query = {
+        $or: [{ username: username }, { email: email }]
+    };
+    if (excludeId) query._id = { $ne: excludeId };
 
-    if (userExists) {
-        throw new Error('Username  or email already exists');
-    }
+    const userExists = await this.findOne(query);
+    if (userExists) throw new Error('Username or email already exists');
 }
 
 module.exports = mongoose.model('User', UserSchema);
