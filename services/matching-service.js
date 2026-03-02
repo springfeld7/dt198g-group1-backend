@@ -1,3 +1,22 @@
+/**
+ * @fileoverview
+ * Matching service for speed-dating events.
+ *
+ * This module provides functionality to generate optimal matches between
+ * registered men and women for each round of an event. It calculates weighted
+ * compatibility scores based on:
+ *   - Shared interests
+ *   - Past date feedback (happiness)
+ *   - Age preferences
+ *   - Forbidden pairs (previously matched)
+ *
+ * Core functionalities include:
+ *   - Preloading historical data (previous rounds and reviews)
+ *   - Building interest and weighted score matrices
+ *   - Running the Hungarian algorithm for maximum weight bipartite matching
+ *   - Returning the final matched pairs for a given round
+ */
+
 const Event = require('../models/event');
 const User = require('../models/user');
 const Match = require('../models/match');
