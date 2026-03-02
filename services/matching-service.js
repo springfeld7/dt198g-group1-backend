@@ -95,7 +95,10 @@ function hungarian(matrix) {
 }
 
 /**
- * Generate matches for a round (1, 2, 3)
+ * Generate matches for a round [1,2,3] of an event.
+ * 
+ * @param {string} eventId - The ID of the event for which to generate matches.
+ * @param {number} round - The round number (1, 2, or 3) for which to generate matches.
  */
 async function generateMatches(eventId, round) {
     const event = await Event.findById(eventId)
