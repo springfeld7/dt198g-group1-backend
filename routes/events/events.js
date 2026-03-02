@@ -3,6 +3,7 @@ const router = express.Router();
 const Event = require("../../models/event")
 const reqAuth = require("../../middleware/auth")
 const reqAdmin = require("../../middleware/adminAuth")
+const {generateMatches} = require("../../services/matching-service");
 const path = require("path");
 const fs = require("fs");
 
@@ -144,7 +145,6 @@ router.delete("/:id/register", async (req, res) => {
     }
 })
 
-
 /**
  * @route POST /events
  * @desc Post a new event to the database
@@ -245,6 +245,33 @@ router.delete("/:id", reqAdmin, async (req, res) => {
         res.status(200).json({message: "Event deleted", event});
     } catch (error) {
         res.status(500).json({error: "Failed to delete event"});
+    }
+});
+
+/**
+ * @route POST /:eventId/round/:round/match
+ * @desc Generate matches for a round of an event
+ * 
+ * This route generates matches for a specific round of an event. 
+ * 
+ * @param {string} eventId.path.required - The id of the event to generate matches for
+ * @param {number} round.path.required - The round number (1, 2, or 3)
+ * 
+ * @returns {json} 200 - JSON object containing a message and the generated matches
+ * @returns {error} 400 - Invalid round number
+ * @returns {Error} 500 - Internal server error from reading the database or generating matches
+ */
+router.post("/:eventId/round/:round/match", reqAdmin, async (req, res) => {
+     try {
+        const { eventId, round } = req.params;
+
+        if (![1,2,3].includes(Number(round))) return res.status(400).json({ error: "Invalid round" });
+
+        const matches = await generateMatches(eventId, Number(round));
+        res.status(200).json({ message: `Round ${round} matches generated`, matches });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
     }
 });
 
