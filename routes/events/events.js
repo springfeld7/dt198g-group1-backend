@@ -249,7 +249,7 @@ router.delete("/:id", reqAdmin, async (req, res) => {
 });
 
 /**
- * @route POST /:eventId/round/:round/match
+ * @route GET /:eventId/round/:round/match
  * @desc Generate matches for a round of an event
  * 
  * This route generates matches for a specific round of an event. 
@@ -261,7 +261,7 @@ router.delete("/:id", reqAdmin, async (req, res) => {
  * @returns {error} 400 - Invalid round number
  * @returns {Error} 500 - Internal server error from reading the database or generating matches
  */
-router.post("/:eventId/round/:round/match", reqAdmin, async (req, res) => {
+router.get("/:eventId/round/:round/match", reqAdmin, async (req, res) => {
      try {
         const { eventId, round } = req.params;
 
