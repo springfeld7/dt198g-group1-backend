@@ -371,11 +371,19 @@ function calcHappyScore(user, candidate) {
  * @returns {number} A score between 0 and 1 representing age preference match.
  */
 function calcAgeScore(user, candidate) {
-    if (!user.hasReviewData) return PERSPECTIVE_SCORE;
-    if (user.agePref === 0) return candidate.age < user.lastDateAge ? 1 : 0;
-    if (user.agePref === 1) return candidate.age > user.lastDateAge ? 1 : 0;
-    if (user.agePref === 2) return Math.abs(candidate.age - user.age) <= SIMILAR_AGE_TOLERANCE ? 1 : 0;
-    return PERSPECTIVE_SCORE;
+    if (!user.hasReviewData) {
+        return PERSPECTIVE_SCORE;
+    }
+    switch (user.agePref) {
+        case 0: // prefers younger than last date
+            return candidate.age < user.lastDateAge ? 1 : 0;
+        case 1: // prefers older than last date
+            return candidate.age > user.lastDateAge ? 1 : 0;
+        case 2: // prefers similar age
+            return Math.abs(candidate.age - user.age) <= SIMILAR_AGE_TOLERANCE ? 1 : 0;
+        default:
+            return PERSPECTIVE_SCORE;
+    }
 }
 
 /**
