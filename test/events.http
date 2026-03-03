@@ -21,11 +21,11 @@ POST {{url}}/events
 Content-Type: application/json
 
 {
-	"title": "Speed dating night",
+	"title": "Match and Mingle",
 	"description": "An evening of quick rounds and great conversations.",
 	"date": "2026-03-01T18:30:00.000Z",
-	"location": "Community Hall",
-	"maxSpots": 60
+	"location": "Blight Town",
+	"maxSpots": 20
 }
 ###############################################
 
@@ -75,5 +75,20 @@ Content-Type: application/json
 // unregister for event
 DELETE {{url}}/events/698ef39bc55f2bea2a95ae59/register
 Content-Type: application/json
+###############################################
 
+###############################################
+# generate matches for round 1
+GET {{url}}/events/69a5c588038b17e575f3c00b/1/match
+Content-Type: application/json
+###############################################
+
+# Generate matches for Round 2 of the event
+GET {{url}}/events/69a5c588038b17e575f3c00b/2/match
+Content-Type: application/json
+###############################################
+
+# Generate matches for Round 3 of the event
+GET {{url}}/events/69a5c588038b17e575f3c00b/3/match
+Content-Type: application/json
 ###############################################
