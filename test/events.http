@@ -45,9 +45,8 @@ Content-Type: application/json
 // Delete event
 DELETE {{url}}/events/69932bbc083c3a2d89f3aa5b
 ###############################################
-// Update event
-###############################################
 
+// Update event
 PUT {{url}}/events/6991dce013ded751d7a90d2f
 Content-Type: application/json
 
@@ -60,16 +59,9 @@ Content-Type: application/json
 }
 ###############################################
 
-
-###############################################
-
 // Register for event
 POST {{url}}/events/698ef39bc55f2bea2a95ae59/register
 Content-Type: application/json
-
-###############################################
-
-
 ###############################################
 
 // unregister for event
@@ -77,7 +69,6 @@ DELETE {{url}}/events/698ef39bc55f2bea2a95ae59/register
 Content-Type: application/json
 ###############################################
 
-###############################################
 # generate matches for round 1
 GET {{url}}/events/69a5c588038b17e575f3c00b/1/match
 Content-Type: application/json

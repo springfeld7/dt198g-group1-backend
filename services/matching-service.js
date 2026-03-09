@@ -10,11 +10,19 @@
  *   - Age preferences
  *   - Forbidden pairs (previously matched)
  *
+ * In addition to generating matches, this service produces **snapshots** of the
+ * score matrix at each computation step to support frontend visualization:
+ *   - Base snapshot of the initial interest similarity matrix
+ *   - Update snapshots for each cell when computing weighted scores (happiness, age, and broaden adjustments)
+ *   - Snapshots include a detailed breakdown of contributions, enabling hover tooltips
+ *     showing interest similarity, happiness adjustment, age preference adjustment, and final score
+ *
  * Core functionalities include:
  *   - Preloading historical data (previous rounds and reviews)
  *   - Building interest and weighted score matrices
+ *   - Creating snapshots for visualization (base and update)
  *   - Running the Hungarian algorithm for maximum weight bipartite matching
- *   - Returning the final matched pairs for a given round
+ *   - Returning both the matched pairs and the stepwise snapshots for a given round
  */
 
 const Event = require('../models/event');
@@ -164,7 +172,7 @@ async function generateMatches(eventId, round) {
 
     // Build weighted score matrix
     const questions = await Question.getQuestions();
-    const scoreMatrix = buildScoreMatrix({
+    const { matrix: scoreMatrix, snapshots } = buildScoreMatrix({
         n,
         men,
         women,
@@ -187,7 +195,7 @@ async function generateMatches(eventId, round) {
 
     printScoreMatrix(men, women, scoreMatrix);
 
-    return matchedPairs;
+    return { matchedPairs, snapshots };
 }
 
 /* ---------------- PRIVATE HELPERS ---------------- */
@@ -288,6 +296,14 @@ async function preloadPreviousData(event, round) {
 function buildScoreMatrix(ctx) {
     const { n, men, women, interestMatrix, forbiddenPairs, reviewByUser, lastDateByUser, questions, round } = ctx;
     const matrix = Array.from({ length: n }, () => Array(n).fill(0));
+    const snapshots = [];
+    let step = 0;
+
+    snapshots.push(createBaseSnapshot(interestMatrix, men.map(m => m._id), women.map(w => w._id)));
+
+    if (round === 1) {
+        return { matrix: interestMatrix, snapshots };
+    }
 
     // Get question IDs
     const WAS_HAPPY_QID = questions.find(q => q.text.includes("happy"))?._id.toString();
@@ -323,25 +339,40 @@ function buildScoreMatrix(ctx) {
 
             if (forbiddenPairs.has(`${m.id}_${w.id}`)) {
                 matrix[i][j] = WEIGHTS.forbiddenPair;
+                snapshots.push(
+                    createUpdateSnapshot(++step, i, j, WEIGHTS.forbiddenPair, {
+                        interest: 0,
+                        happy: 0,
+                        age: 0,
+                        reason: "forbidden pair"
+                    })
+                );
                 continue;
             }
 
-            let score = interestMatrix[i][j];
+            const manHappyScore = calcHappyScore(m, w);
+            const manAgeScore = calcAgeScore(m, w);
+            const womanHappyScore = calcHappyScore(w, m);
+            const womanAgeScore = calcAgeScore(w, m);
 
-            if (round > 1) {
-                const manHappyScore = calcHappyScore(m, w);
-                const manAgeScore = calcAgeScore(m, w);
+            const combinedHappy = (manHappyScore + womanHappyScore) / 2;
+            const combinedAge = (manAgeScore + womanAgeScore) / 2;
+            const wInt = m.broaden ? WEIGHTS.interest : 1.0;
 
-                const womanHappyScore = calcHappyScore(w, m);
-                const womanAgeScore = calcAgeScore(w, m);
+            const interestContribution = wInt * interestMatrix[i][j];
+            const happyContribution = WEIGHTS.happy * combinedHappy;
+            const ageContribution = WEIGHTS.age * combinedAge;
 
-                const combinedHappy = (manHappyScore + womanHappyScore) / 2;
-                const combinedAge = (manAgeScore + womanAgeScore) / 2;
-                const wInt = m.broaden ? WEIGHTS.interest : 1.0;
+            const score = interestContribution + happyContribution + ageContribution;
 
-                score = (wInt * interestMatrix[i][j]) + (WEIGHTS.happy * combinedHappy) + (WEIGHTS.age * combinedAge);
-            }
             matrix[i][j] = score;
+            snapshots.push(
+                createUpdateSnapshot(++step, i, j, score, {
+                    interest: interestContribution,
+                    happy: happyContribution,
+                    age: ageContribution,
+                })
+            );
         }
     }
     return matrix;
@@ -384,6 +415,42 @@ function calcAgeScore(user, candidate) {
         default:
             return PERSPECTIVE_SCORE;
     }
+}
+
+/**
+ * Create a base snapshot for visualization.
+ *
+ * @param {number[][]} matrix - The NxN matrix representing the initial scores.
+ * @param {string[]} rowIds - Array of participant IDs corresponding to each row (e.g., men).
+ * @param {string[]} colIds - Array of participant IDs corresponding to each column (e.g., women).
+ * @returns {{type: "base", step: number, rowIds: string[], colIds: string[], matrix: number[][]}} 
+ *   Base snapshot object
+ *   - type: Always "base"
+ *   - step: Step number (0 for base snapshot)
+ *   - rowIds: Participant IDs for rows
+ *   - colIds: Participant IDs for columns
+ *   - matrix: The original NxN score matrix
+ */
+function createBaseSnapshot(matrix, rowIds, colIds) {
+    return { type: "base", step: 0, rowIds, colIds, matrix };
+}
+
+/**
+ * Create an update snapshot for a single cell in the score matrix.
+ *
+ * Update snapshots are used to show step-by-step changes in the
+ * matrix for visualization and include a breakdown of the scoring components.
+ *
+ * @param {number} step - The sequential step number of this update.
+ * @param {number} row - Row index (participant index for the row, e.g., man).
+ * @param {number} col - Column index (participant index for the column, e.g., woman).
+ * @param {number} value - Final calculated value for this cell.
+ * @param {{interest: number, happy: number, age: number}} breakdown - Weighted contributions for this cell.
+ * @returns {{type: "update", step: number, row: number, col: number, value: number, 
+ *              breakdown: {interest: number, happy: number, age: number}}} Update snapshot object
+ */
+function createUpdateSnapshot(step, row, col, value, breakdown) {
+    return { type: "update", step, row, col, value, breakdown };
 }
 
 /**
