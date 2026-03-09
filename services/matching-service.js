@@ -375,7 +375,7 @@ function buildScoreMatrix(ctx) {
             );
         }
     }
-    return matrix;
+    return { matrix, snapshots };
 }
 
 /**
