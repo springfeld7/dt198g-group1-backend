@@ -47,16 +47,31 @@ router.get("/", async (req, res) => {
  * @returns {Error} 500 - Internal server error if reading the database fails
  */
 router.get("/:id", async (req, res) => {
-    const {id} = req.params;
-    try {
-        const event = await Event.getEventById(id);
-        if (!event) {
-            return res.status(404).json({error: "event not found"})
-        }
-        res.status(200).json(event);
-    } catch (error) {
-        res.status(500).json({error:error.message});
+  const { id } = req.params;
+  const isAdmin = req.session?.user?.isAdmin === true;
+
+  try {
+    let query = Event.findById(id);
+
+    if (isAdmin) {
+      query = query
+        .populate({
+          path: 'registeredMen',
+          select: '_id username firstName surname email phone age location gender interests'
+        })
+        .populate({
+          path: 'registeredWomen',
+          select: '_id username firstName surname email phone age location gender interests'
+        });
     }
+
+    const event = await query.exec();
+    if (!event) return res.status(404).json({ error: "event not found" });
+
+    res.status(200).json(event);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
