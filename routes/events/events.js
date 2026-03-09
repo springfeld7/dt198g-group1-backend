@@ -250,25 +250,36 @@ router.delete("/:id", reqAdmin, async (req, res) => {
 
 /**
  * @route GET /:eventId/:round/match
- * @desc Generate matches for a round of an event
+ * @desc Generate and return matches and visualization snapshots for a round of an event
  * 
- * This route generates matches for a specific round of an event. 
+ * This route generates matches for a specific round of an event and provides
+ * step-by-step snapshots of the score matrix for frontend visualization. Snapshots
+ * include base interest similarity and detailed cell updates with breakdowns for
+ * happiness and age adjustments.
  * 
- * @param {string} eventId.path.required - The id of the event to generate matches for
+ * @param {string} eventId.path.required - The ID of the event to generate matches for
  * @param {number} round.path.required - The round number (1, 2, or 3)
  * 
- * @returns {json} 200 - JSON object containing a message and the generated matches
+ * @returns {json} 200 - JSON object containing:
+ *   - message: Informational string
+ *   - matchedPairs: Array of generated match objects {man: ObjectId, woman: ObjectId}
+ *   - snapshots: Array of base and update snapshots for visualization
  * @returns {error} 400 - Invalid round number
  * @returns {Error} 500 - Internal server error from reading the database or generating matches
  */
 router.get("/:eventId/:round/match", reqAdmin, async (req, res) => {
      try {
         const { eventId, round } = req.params;
+        const roundNum = Number(round);
 
-        if (![1,2,3].includes(Number(round))) return res.status(400).json({ error: "Invalid round" });
+        if (![1,2,3].includes(roundNum)) return res.status(400).json({ error: "Invalid round" });
 
-        const matches = await generateMatches(eventId, Number(round));
-        res.status(200).json({ message: `Round ${round} matches generated`, matches });
+        const { matchedPairs, snapshots } = await generateMatches(eventId, roundNum);
+        res.status(200).json({ 
+            message: `Round ${roundNum} matches generated`, 
+            matchedPairs, 
+            snapshots 
+        });
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message });
