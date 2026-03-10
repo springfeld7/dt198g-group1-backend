@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../../models/user");
+const Match = require("../../models/match");
 const requireAuth = require("../../middleware/auth");
 const fs = require("fs");
 const path = require("path");
@@ -41,11 +42,11 @@ router.get("/", async (req, res) => {
 router.put("/", async (req, res) => {
     try {
         if (req.body.password !== req.body.repeatPassword) {
-            return res.status(400).json({ error: "Passwords do not match" });
+            return res.status(400).json({error: "Passwords do not match"});
         }
         const hashedPassword = await hashPassword(req.body.password.trim());
 
-        const users = await User.updateUser(req.session.user.id,req.body,hashedPassword);
+        const users = await User.updateUser(req.session.user.id, req.body, hashedPassword);
 
         res.json(users);
     } catch (error) {
@@ -69,14 +70,13 @@ router.get("/:id", async (req, res) => {
     try {
         const user = await User.getUserById(id)
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({message: 'User not found'});
         }
         const userWithImg = user.toObject();
         userWithImg.img = `/resources/img/users/${user._id}.jpg`;
 
         res.json(userWithImg);
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({error: "Failed to fetch user"});
     }
 });
@@ -84,31 +84,31 @@ router.get("/:id", async (req, res) => {
 /**
  * @route GET /users/:id/pictures
  * @desc Retrieve the profile picture of the user with the provided id
- * 
+ *
  * This route fetches the profile picture stored in the `resources/img/users/` folder.
  * It checks if the user is authenticated and whether the picture exists.
- * 
+ *
  * @param {string} id - User ID passed in the URL
- * 
+ *
  * @returns {file} 200 - Returns the profile picture image file if found
  * @returns {json} 404 - Error message if the image is not found
  * @returns {json} 500 - Internal server error if trouble reading the file
  */
 router.get("/:id/pictures", async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const imgPath = path.join(__dirname, "../../resources/img/users", `${id}.jpg`);
 
         fs.stat(imgPath, (err, stats) => {
             if (err || !stats.isFile()) {
-                return res.status(404).json({ error: "Profile picture not found" });
+                return res.status(404).json({error: "Profile picture not found"});
             }
 
             res.sendFile(imgPath);
         });
     } catch (error) {
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({error: "Internal server error"});
     }
 })
 
@@ -127,9 +127,34 @@ router.get("/:id/matches", async (req, res) => {
     try {
         const matches = await User.getMatches(id)
         res.json(matches);
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({error: "Failed to fetch matches"});
+    }
+})
+
+/**
+ * @route PUT /users/:id/matches
+ * @desc Toggles the like of the match and the intent to share details.
+ *
+ * This route updates the match with the boolean representing like status, if mutual the match is added.
+ * It returns the updated match in a JSON file.
+ *
+ * @returns {json} 200 - JSON object of the users match
+ * @returns {json} 404 - Match not found error
+ * @returns {Error} 500 - Internal server error if reading the database fails
+ */
+router.put("/:id/matches", async (req, res) => {
+    const {id} = req.params;
+    const {matchId, liked} = req.body
+    try {
+        const match = await Match.findById(matchId);
+        if (!match) {
+            return res.status(404).json({message: 'Match not found'});
+        }
+        const matches = await User.addMatch(id, match, liked)
+        res.json(matches);
+    } catch (error) {
+        res.status(500).json({error: error.message});
     }
 })
 
@@ -148,8 +173,7 @@ router.patch("/:id/matches/seen", async (req, res) => {
     try {
         await User.markMatchesAsSeen(id);
         res.json({message: "Matches marked as seen"});
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({error: "Failed to update seen status"});
     }
 })
@@ -172,14 +196,14 @@ router.delete("/matches/:id", async (req, res) => {
 
     try {
         const result = await User.removeMatch(userId, matchId);
-        
+
         if (result.modifiedCount === 0) {
-            return res.status(400).json({ error: "Match not found" });
+            return res.status(400).json({error: "Match not found"});
         }
 
-        res.status(200).json({ message: "Match was successfully deleted" });
+        res.status(200).json({message: "Match was successfully deleted"});
     } catch (error) {
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({error: "Internal Server Error"});
     }
 });
 
