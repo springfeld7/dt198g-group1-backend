@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 /**
  * User Schema for interacting with the user database.
  *
@@ -23,8 +24,8 @@ const mongoose = require('mongoose');
  * @property {Date} matches.matchedAt - The timestamp when the match was created.
  */
 const UserSchema = new mongoose.Schema({
-    
-    username: { 
+
+    username: {
         type: String,
         required: [true, 'Username is required!'],
         unique: true,
@@ -42,7 +43,7 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    firstName: { 
+    firstName: {
         type: String,
         required: [true, 'First name is required!'],
         trim: true,
@@ -69,7 +70,7 @@ const UserSchema = new mongoose.Schema({
         min: [0, 'Age cannot be negative'],
         max: [150, 'Age must be realistic']
     },
-    email: { 
+    email: {
         type: String,
         required: [true, 'E-mail is required'],
         unique: true,
@@ -161,7 +162,7 @@ UserSchema.statics.register = async function (data) {
  * Returns users from the database
  * @returns Promise<Array<UserDocument>> A Promise that resolves to an array of Mongoose User documents.
  */
-UserSchema.statics.getUsers = async function() {
+UserSchema.statics.getUsers = async function () {
     return this.find().select('-password');
 };
 
@@ -173,19 +174,19 @@ UserSchema.statics.getUsers = async function() {
  * @returns {Promise<mongoose.Document>} The updated user document.
  * @throws {Error} Throws if the user is not found or username/email already exists.
  */
-UserSchema.statics.updateUser = async function(id, data, hashedPassword) {
+UserSchema.statics.updateUser = async function (id, data, hashedPassword) {
     await this.infoExist(data.username, data.email, id)
 
 
     const updateFields = {
         ...data,
-        ...(hashedPassword && { password: hashedPassword })
+        ...(hashedPassword && {password: hashedPassword})
     };
 
     const updatedUser = await this.findByIdAndUpdate(
         id,
-        { $set: updateFields },
-        { new: true, runValidators: true }
+        {$set: updateFields},
+        {new: true, runValidators: true}
     ).lean();
 
     if (!updatedUser) throw new Error("User not found");
@@ -198,12 +199,12 @@ UserSchema.statics.updateUser = async function(id, data, hashedPassword) {
  * @param {string} id id for the user
  * @returns {Promise<mongoose.Document|null>} The user object or null
  */
-UserSchema.statics.getUserById = async function(id) {
+UserSchema.statics.getUserById = async function (id) {
     return this.findById(id)
-         .populate({
-             path: "interests",
-             select: "name"
-         }).select("-password");
+        .populate({
+            path: "interests",
+            select: "name"
+        }).select("-password");
 };
 
 /**
@@ -211,7 +212,7 @@ UserSchema.statics.getUserById = async function(id) {
  * @param {string} id - The id of the user
  * @returns {Promise<*[]>} The user matches
  */
-UserSchema.statics.getMatches = async function(id) {
+UserSchema.statics.getMatches = async function (id) {
     const user = await this.findById(id)
         .populate({
             path: "matches.user",
@@ -230,14 +231,53 @@ UserSchema.statics.getMatches = async function(id) {
     }));
 };
 
+
+/**
+ * Add liked flag to the user match and if mutual adds the match to the users.
+ * @param {string} userId - The id of the user
+ * @param {string} match - The match object
+ * @param {boolean} liked - the boolean flag for the users like
+ * @returns {Promise<*[]>} The updated match.
+ */
+UserSchema.statics.addMatch = async function (userId, match, liked) {
+
+    if (
+        match.man.toString() !== userId.toString() &&
+        match.woman.toString() !== userId.toString()) {
+        throw new Error("User is not part of this match");
+    }
+
+    match.likedBy.set(userId.toString(), liked);
+    await match.save();
+
+    const manLiked = match.likedBy.get(userId.toString()) === true;
+    const womanLiked = match.likedBy.get(match.woman.toString()) === true;
+
+    if (manLiked && womanLiked) {
+        const [manUpdate, womanUpdate] = await Promise.all([
+            this.updateOne(
+                {_id: match.man, "matches.user": {$ne: match.woman}},
+                {$push: {matches: {user: match.woman, isSeen: false}}}
+            ),
+            this.updateOne(
+                {_id: match.woman, "matches.user": {$ne: match.man}},
+                {$push: {matches: {user: match.man, isSeen: false}}}
+            )
+        ])
+        if (manUpdate.modifiedCount === 0 && womanUpdate.modifiedCount === 0) {
+            throw new Error("Match is already added");
+        }
+        return match;
+    }
+}
 /**
  * Marks all matches of a specific user as seen.
  * @param {string} userId - The ID of the user whose matches are being viewed.
  */
-UserSchema.statics.markMatchesAsSeen = async function(userId) {
+UserSchema.statics.markMatchesAsSeen = async function (userId) {
     return this.updateOne(
-        { _id: userId },
-        { $set: { "matches.$[].isSeen": true } }
+        {_id: userId},
+        {$set: {"matches.$[].isSeen": true}}
     );
 };
 
@@ -247,10 +287,10 @@ UserSchema.statics.markMatchesAsSeen = async function(userId) {
  * @param {string} matchId - The ID of the match to be removed.
  * @returns {Promise}
  */
-UserSchema.statics.removeMatch = async function(userId, matchId) {
+UserSchema.statics.removeMatch = async function (userId, matchId) {
     return this.updateOne(
-        { _id: userId },
-        { $pull: { matches: { user: matchId } } }
+        {_id: userId},
+        {$pull: {matches: {user: matchId}}}
     );
 };
 
@@ -258,14 +298,15 @@ UserSchema.statics.removeMatch = async function(userId, matchId) {
  * Checks if a username or email already exists in the database.
  * @param {string} username The username to check.
  * @param {string} email The email to check.
+ * @param {boolean} excludeId boolean to exclude id.
  * @returns {Promise<void>} Resolves if username/email are available.
  * @throws {Error} Throws if a user with the given username or email already exists.
  */
-UserSchema.statics.infoExist = async function(username, email, excludeId = null) {
+UserSchema.statics.infoExist = async function (username, email, excludeId = null) {
     const query = {
-        $or: [{ username: username }, { email: email }]
+        $or: [{username: username}, {email: email}]
     };
-    if (excludeId) query._id = { $ne: excludeId };
+    if (excludeId) query._id = {$ne: excludeId};
 
     const userExists = await this.findOne(query);
     if (userExists) throw new Error('Username or email already exists');
