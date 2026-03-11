@@ -3,7 +3,7 @@ const router = express.Router();
 const Event = require("../../models/event")
 const reqAuth = require("../../middleware/auth")
 const reqAdmin = require("../../middleware/adminAuth")
-const {generateMatches} = require("../../services/matching-service");
+const { generateMatches } = require("../../services/matching-service");
 const path = require("path");
 const fs = require("fs");
 
@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
         const events = await query;
         res.status(200).json(events);
     } catch (error) {
-        res.status(500).json({error: "Failed to fetch events"});
+        res.status(500).json({ error: "Failed to fetch events" });
     }
 });
 
@@ -47,31 +47,31 @@ router.get("/", async (req, res) => {
  * @returns {Error} 500 - Internal server error if reading the database fails
  */
 router.get("/:id", async (req, res) => {
-  const { id } = req.params;
-  const isAdmin = req.session?.user?.isAdmin === true;
+    const { id } = req.params;
+    const isAdmin = req.session?.user?.isAdmin === true;
 
-  try {
-    let query = Event.findById(id);
+    try {
+        let query = Event.findById(id);
 
-    if (isAdmin) {
-      query = query
-        .populate({
-          path: 'registeredMen',
-          select: '_id username firstName surname email phone age location gender interests'
-        })
-        .populate({
-          path: 'registeredWomen',
-          select: '_id username firstName surname email phone age location gender interests'
-        });
+        if (isAdmin) {
+            query = query
+                .populate({
+                    path: 'registeredMen',
+                    select: '_id username firstName surname email phone age location gender interests'
+                })
+                .populate({
+                    path: 'registeredWomen',
+                    select: '_id username firstName surname email phone age location gender interests'
+                });
+        }
+
+        const event = await query.exec();
+        if (!event) return res.status(404).json({ error: "event not found" });
+
+        res.status(200).json(event);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    const event = await query.exec();
-    if (!event) return res.status(404).json({ error: "event not found" });
-
-    res.status(200).json(event);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
 /**
@@ -87,7 +87,7 @@ router.get("/:id", async (req, res) => {
  * @returns {json} 500 - Internal server error if trouble reading the file
  */
 router.get("/:id/pictures", async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     try {
         const imgPath = path.join(__dirname, "../../resources/img/events", `${id}.jpg`);
 
@@ -96,10 +96,10 @@ router.get("/:id/pictures", async (req, res) => {
                 return res.status(404).json({ error: "Event picture not found" });
             }
             res.sendFile(imgPath);
-            });
-        } catch (error) {
-            res.status(500).json({ error: "Internal server error" });
-        }
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+    }
 })
 
 
@@ -117,17 +117,17 @@ router.get("/:id/pictures", async (req, res) => {
  * @returns {Error} 500 - Internal server error if reading the database fails failure to register
  */
 router.post("/:id/register", async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     try {
-        const {id: userId, gender} = req.session.user;
+        const { id: userId, gender } = req.session.user;
         const event = await Event.getEventById(id);
         if (!event) {
-            return res.status(404).json({message: "event not found"})
+            return res.status(404).json({ message: "event not found" })
         }
         const updatedEvent = await Event.registerForEvent(event, userId, gender);
         res.status(200).json(updatedEvent);
     } catch (error) {
-        res.status(500).json({error: error.message});
+        res.status(500).json({ error: error.message });
     }
 })
 
@@ -145,18 +145,18 @@ router.post("/:id/register", async (req, res) => {
  * @returns {Error} 500 - Internal server error if reading the database fails or failure to unregister
  */
 router.delete("/:id/register", async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     try {
-        const {id: userId, gender} = req.session.user;
+        const { id: userId, gender } = req.session.user;
         const event = await Event.getEventById(id);
         if (!event) {
-            return res.status(404).json({message: "event not found"})
+            return res.status(404).json({ message: "event not found" })
         }
 
         const updatedEvent = await Event.unRegisterForEvent(event, userId, gender);
         res.status(200).json(updatedEvent);
     } catch (error) {
-        res.status(500).json({error: error.message});
+        res.status(500).json({ error: error.message });
     }
 })
 
@@ -180,7 +180,7 @@ router.delete("/:id/register", async (req, res) => {
  */
 router.post("/", reqAdmin, async (req, res) => {
     try {
-        const {title, description, date, location, maxSpots} = req.body;
+        const { title, description, date, location, maxSpots } = req.body;
         const eventDate = new Date(date);
 
         const existingEvent = await Event.findOne({
@@ -191,13 +191,13 @@ router.post("/", reqAdmin, async (req, res) => {
             maxSpots,
         });
         if (existingEvent) {
-            return res.status(409).json({error: "Event already exists"});
+            return res.status(409).json({ error: "Event already exists" });
         }
-        const event = await Event.createEvent(title,description, date, location, maxSpots);
+        const event = await Event.createEvent(title, description, date, location, maxSpots);
 
         res.status(201).json(event);
     } catch (error) {
-        res.status(500).json({error: "Failed to create event"});
+        res.status(500).json({ error: "Failed to create event" });
     }
 });
 
@@ -223,17 +223,17 @@ router.post("/", reqAdmin, async (req, res) => {
  */
 router.put("/:id", reqAdmin, async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         const event = await Event.getEventById(id);
 
         if (!event) {
-            return res.status(404).json({error: "Event not found"});
+            return res.status(404).json({ error: "Event not found" });
         }
-        const updatedEvent = await Event.updateEvent(event,req.body);
+        const updatedEvent = await Event.updateEvent(event, req.body);
 
         res.status(200).json(updatedEvent);
     } catch (error) {
-        res.status(500).json({error: "Failed to update event"});
+        res.status(500).json({ error: "Failed to update event" });
     }
 });
 
@@ -251,15 +251,15 @@ router.put("/:id", reqAdmin, async (req, res) => {
  * @returns {Error} 500 - Internal server error from reading the database
  */
 router.delete("/:id", reqAdmin, async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     try {
         const event = await Event.findById(id);
-        if (!event) return res.status(404).json({error: "Event not found"});
+        if (!event) return res.status(404).json({ error: "Event not found" });
 
         await Event.delete(id)
-        res.status(200).json({message: "Event deleted", event});
+        res.status(200).json({ message: "Event deleted", event });
     } catch (error) {
-        res.status(500).json({error: "Failed to delete event"});
+        res.status(500).json({ error: "Failed to delete event" });
     }
 });
 
@@ -283,20 +283,158 @@ router.delete("/:id", reqAdmin, async (req, res) => {
  * @returns {Error} 500 - Internal server error from reading the database or generating matches
  */
 router.get("/:eventId/:round/match", reqAdmin, async (req, res) => {
-     try {
+    try {
         const { eventId, round } = req.params;
         const roundNum = Number(round);
 
-        if (![1,2,3].includes(roundNum)) return res.status(400).json({ error: "Invalid round" });
+        if (![1, 2, 3].includes(roundNum)) return res.status(400).json({ error: "Invalid round" });
 
         const { matchedPairs, snapshots } = await generateMatches(eventId, roundNum);
-        res.status(200).json({ 
-            message: `Round ${roundNum} matches generated`, 
-            matchedPairs, 
-            snapshots 
+        res.status(200).json({
+            message: `Round ${roundNum} matches generated`,
+            matchedPairs,
+            snapshots
         });
     } catch (err) {
         console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route POST /events/:eventId/:round/matches
+ * @desc Save finalized matches and seating assignments for a specific round of an event
+ *
+ * This route is used by an organizer to persist the finalized seating layout
+ * for a round after reviewing or modifying the generated matches. The request
+ * must contain the match pairings along with their assigned table and seat
+ * positions. Each match is stored as a Match document, and the created Match
+ * IDs are stored in the corresponding round field of the Event document
+ * (`pairsFirstRound`, `pairsSecondRound`, or `pairsThirdRound`).
+ *
+ * @param {string} eventId.path.required - The ID of the event whose matches are being saved
+ * @param {number} round.path.required - The round number (1, 2, or 3)
+ *
+ * @param {Object} body.required - Request body containing finalized matches
+ * @param {Array<Object>} body.matches - Array of match objects
+ * @param {string} body.matches[].man - The user ID of the male participant
+ * @param {string} body.matches[].woman - The user ID of the female participant
+ * @param {number} body.matches[].tableNumber - The table number assigned to this match
+ * @param {string} body.matches[].manSeat - The seat position of the man ('left' or 'right')
+ * @param {string} body.matches[].womanSeat - The seat position of the woman ('left' or 'right')
+ *
+ * @returns {json} 200 - JSON object containing a success message and the updated event document
+ * @returns {error} 400 - Invalid round number provided
+ * @returns {Error} 500 - Internal server error if saving matches fails
+ */
+router.post("/:eventId/:round/matches", reqAdmin, async (req, res) => {
+
+    try {
+
+        const { eventId, round } = req.params;
+        const roundNum = Number(round);
+        const { matches } = req.body;
+
+        if (![1, 2, 3].includes(roundNum)) {
+            return res.status(400).json({ error: "Invalid round" });
+        }
+
+        const event = await Event.saveRoundMatches(eventId, roundNum, matches);
+
+        res.status(200).json({
+            message: `Round ${roundNum} matches saved`,
+            event
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * @route GET /:eventId/:round/next-date
+ * @desc Retrieve the next match for the current participant in a given round.
+ *
+ * If the participant is still in the registered list, returns {} to indicate polling.
+ * If no matches exist for the round, also returns {} for polling.
+ * Otherwise, returns the matched participant info including table and seat.
+ *
+ * @param {string} eventId.path.required - The ID of the event
+ * @param {number} round.path.required - The round number (1, 2, or 3)
+ *
+ * @returns {json} 200 - JSON object containing the next match { user, tableNumber, seat }
+ * @returns {error} 400 - Invalid round number
+ * @returns {Error} 500 - Internal server error
+ */
+router.get('/:eventId/:round/next-date', async (req, res) => {
+    try {
+        const userId = req.user.id.toString();
+        const { eventId, round } = req.params;
+        const roundNum = Number(round);
+
+        if (![1, 2, 3].includes(roundNum)) {
+            return res.status(400).json({ error: 'Invalid round' });
+        }
+
+        // Map round number to field name
+        const roundFieldMap = {
+            1: 'pairsFirstRound',
+            2: 'pairsSecondRound',
+            3: 'pairsThirdRound'
+        };
+        const roundField = roundFieldMap[roundNum];
+
+        const event = await Event.findById(eventId)
+            .populate({
+                path: roundField,
+                populate: [
+                    { path: 'man', select: '_id firstName surname interests', populate: { path: 'interests', select: 'name -_id' } },
+                    { path: 'woman', select: '_id firstName surname interests', populate: { path: 'interests', select: 'name -_id' } },
+                ],
+            })
+            .lean();
+
+        if (!event) return res.status(404).json({ error: 'Event not found' });
+
+        const isRegistered = event.registeredMen.some(id => id.toString() === userId) ||
+            event.registeredWomen.some(id => id.toString() === userId);
+
+        if (!isRegistered) {
+            return res.status(403).json({ error: 'User is not registered for this event' });
+        }
+
+        // No matches populated yet -> return empty object
+        if (!event[roundField] || event[roundField].length === 0) return res.json({});
+
+        // Find the match that includes this user
+        const match = event[roundField].find(m =>
+            m.man._id.toString() === userId || m.woman._id.toString() === userId
+        );
+
+        if (!match) return res.status(404).json({ error: 'Match not found for this user' });
+
+        // Determine the "other" participant and their seat
+        const isMan = match.man._id.toString() === userId;
+        const userMatch = isMan ? match.woman : match.man;
+        const seat = isMan ? match.manSeat : match.womanSeat;
+
+        // Build img URL
+        const img = `/resources/img/users/${userMatch._id}.jpg`;
+
+        res.json({
+            user: {
+                _id: userMatch._id,
+                firstName: userMatch.firstName,
+                surname: userMatch.surname,
+                interests: userMatch.interests,
+                img
+            },
+            tableNumber: match.tableNumber,
+            seat
+        });
+
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ error: err.message });
     }
 });

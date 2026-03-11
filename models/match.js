@@ -14,6 +14,17 @@ const {Schema} = require("mongoose");
 const MatchSchema = new mongoose.Schema({
     man: {type: Schema.Types.ObjectId, ref: 'User', required: true},
     woman: {type: Schema.Types.ObjectId, ref: 'User', required: true},
+    tableNumber: { type: Number, required: true },
+    manSeat: {
+        type: String,
+        enum: ['left', 'right'],
+        required: true
+    },
+    womanSeat: {
+        type: String,
+        enum: ['left', 'right'],
+        required: true
+    },
     reviews: [{type: Schema.Types.ObjectId, ref: 'Review', default: []}],
     likedBy: {type: Map, of: Boolean, default: {}}
 });

@@ -178,4 +178,31 @@ EventSchema.statics.alreadyRegisterForEvent = async function(event,userId,gender
     return { alreadyRegistered, field};
 }
 
+/**
+ * Saves matches for a specific round.
+ * @param {string} eventId
+ * @param {number} round
+ * @param {Array<Object>} matches
+ * @returns {Promise<EventDocument>}
+ */
+EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
+
+    const Match = mongoose.model("Match");
+
+    const createdMatches = await Match.insertMany(matches);
+
+    const field =
+        round === 1 ? "pairsFirstRound" :
+        round === 2 ? "pairsSecondRound" :
+        round === 3 ? "pairsThirdRound" : null;
+
+    if (!field) throw new Error("Invalid round");
+
+    return this.findByIdAndUpdate(
+        eventId,
+        { $set: { [field]: createdMatches.map(m => m._id) } },
+        { returnDocument: 'after' }
+    );
+};
+
 module.exports = mongoose.model('Event', EventSchema);

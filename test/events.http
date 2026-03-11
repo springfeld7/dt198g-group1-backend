@@ -9,7 +9,7 @@ GET {{url}}/events
 ###############################################
 
 // test1
-GET {{url}}/events/6991dce013ded751d7a90d2f
+GET {{url}}/events/69ae86d2c1bcbd6dfad9e16e
 ###############################################
 
 // Fail to fetch
@@ -70,16 +70,101 @@ Content-Type: application/json
 ###############################################
 
 # generate matches for round 1
-GET {{url}}/events/69a5c588038b17e575f3c00b/1/match
+GET {{url}}/events/69ae86d2c1bcbd6dfad9e16e/1/match
 Content-Type: application/json
 ###############################################
 
 # Generate matches for Round 2 of the event
-GET {{url}}/events/69a5c588038b17e575f3c00b/2/match
+GET {{url}}/events/69ae86d2c1bcbd6dfad9e16e/2/match
 Content-Type: application/json
 ###############################################
 
 # Generate matches for Round 3 of the event
-GET {{url}}/events/69a5c588038b17e575f3c00b/3/match
+GET {{url}}/events/69ae86d2c1bcbd6dfad9e16e/3/match
+Content-Type: application/json
+###############################################
+
+# Save finalized matches for Round 1
+POST {{url}}/events/69ae86d2c1bcbd6dfad9e16e/1/matches
+Content-Type: application/json
+
+{
+  "matches": [
+    {
+      "man": "69939c73879f9f04d4e38186",
+      "woman": "69939c73879f9f04d4e38194",
+      "tableNumber": 1,
+      "manSeat": "left",
+      "womanSeat": "right"
+    },
+    {
+      "man": "69939c73879f9f04d4e38188",
+      "woman": "69939c73879f9f04d4e38191",
+      "tableNumber": 2,
+      "manSeat": "left",
+      "womanSeat": "right"
+    },
+    {
+      "man": "69939c73879f9f04d4e3818e",
+      "woman": "69939c73879f9f04d4e38192",
+      "tableNumber": 3,
+      "manSeat": "left",
+      "womanSeat": "right"
+    },
+    {
+      "man": "69939c73879f9f04d4e38189",
+      "woman": "69939c73879f9f04d4e38196",
+      "tableNumber": 4,
+      "manSeat": "left",
+      "womanSeat": "right"
+    },
+    {
+      "man": "69939c73879f9f04d4e3818a",
+      "woman": "69939c73879f9f04d4e38190",
+      "tableNumber": 5,
+      "manSeat": "left",
+      "womanSeat": "right"
+    },
+    {
+      "man": "69939c73879f9f04d4e3818b",
+      "woman": "69939c73879f9f04d4e38197",
+      "tableNumber": 6,
+      "manSeat": "left",
+      "womanSeat": "right"
+    },
+    {
+      "man": "69939c73879f9f04d4e3818c",
+      "woman": "69939c73879f9f04d4e38195",
+      "tableNumber": 7,
+      "manSeat": "left",
+      "womanSeat": "right"
+    },
+    {
+      "man": "69939c73879f9f04d4e38187",
+      "woman": "69939c73879f9f04d4e38198",
+      "tableNumber": 8,
+      "manSeat": "left",
+      "womanSeat": "right"
+    },
+    {
+      "man": "69939c73879f9f04d4e3818d",
+      "woman": "69939c73879f9f04d4e3818f",
+      "tableNumber": 9,
+      "manSeat": "left",
+      "womanSeat": "right"
+    },
+    {
+      "man": "69939c73879f9f04d4e38185",
+      "woman": "69939c73879f9f04d4e38193",
+      "tableNumber": 10,
+      "manSeat": "left",
+      "womanSeat": "right"
+    }
+  ]
+}
+###############################################
+
+# Get next match for current participant in Round 1
+GET {{url}}/events/69ae86d2c1bcbd6dfad9e16e/1/next-date
 Content-Type: application/json
 ###############################################
