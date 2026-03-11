@@ -163,3 +163,8 @@ Content-Type: application/json
   ]
 }
 ###############################################
+
+# Get next match for current participant in Round 1
+GET {{url}}/events/69ae86d2c1bcbd6dfad9e16e/1/next-date
+Content-Type: application/json
+###############################################
