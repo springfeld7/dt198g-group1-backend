@@ -250,8 +250,11 @@ UserSchema.statics.addMatch = async function (userId, match, liked) {
     match.likedBy.set(userId.toString(), liked);
     await match.save();
 
-    const manLiked = match.likedBy.get(userId.toString()) === true;
-    const womanLiked = match.likedBy.get(match.woman.toString()) === true;
+    const manId = String(match.man).trim();
+    const womanId = String(match.woman).trim();
+
+    const manLiked = match.likedBy.get(manId) === true;
+    const womanLiked = match.likedBy.get(womanId) === true;
 
     if (manLiked && womanLiked) {
         const [manUpdate, womanUpdate] = await Promise.all([

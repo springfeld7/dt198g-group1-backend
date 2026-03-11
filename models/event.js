@@ -205,4 +205,82 @@ EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
     );
 };
 
+/**
+ * Saves matches for a specific round.
+ * @param {string} eventId
+ * @param {number} round
+ * @param {Array<Object>} matches
+ * @returns {Promise<EventDocument>}
+ */
+EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
+
+    const Match = mongoose.model("Match");
+
+    const createdMatches = await Match.insertMany(matches);
+
+    const field =
+        round === 1 ? "pairsFirstRound" :
+        round === 2 ? "pairsSecondRound" :
+        round === 3 ? "pairsThirdRound" : null;
+
+    if (!field) throw new Error("Invalid round");
+
+    return this.findByIdAndUpdate(
+        eventId,
+        { $set: { [field]: createdMatches.map(m => m._id) } },
+        { returnDocument: 'after' }
+    );
+};
+
+/**
+ * Collects the users matches at the end of the event.
+ * @param {EventDocument} event - The Mongoose event document
+ * @param {string} userId - The ID of the user
+ * @param {string} gender - The gender of the user ('male' or 'female')
+ * @returns {Promise<Array<{
+ *   matchId: import('mongoose').Types.ObjectId,
+ *   otherUser: {
+ *     _id: import('mongoose').Types.ObjectId,
+ *     firstName: string,
+ *     surname: string,
+ *     username: string,
+ *     gender: string
+ *   },
+ *   likedBy: Array<import('mongoose').Types.ObjectId>
+ * }>>} Resolves to an array of match objects containing the other participant and like information.
+ */
+EventSchema.statics.getMatchesAtEnd = async function(event,userId,gender) {
+    const allRounds = [
+        ...event.pairsFirstRound,
+        ...event.pairsSecondRound,
+        ...event.pairsThirdRound
+    ];
+
+    const Match = mongoose.model('Match');
+
+    const matches = await Match.find({ _id: { $in: allRounds } })
+        .populate('man', '_id firstName surname')
+        .populate('woman', '_id firstName surname')
+        .exec();
+
+    const userMatches = matches.filter(match =>
+        match.man._id.toString() === userId.toString() ||
+        match.woman._id.toString() === userId.toString())
+
+    return userMatches.map(match => {
+        const other = (gender === 'man') ? match.woman : match.man;
+        return {
+            matchId: match._id,
+            otherUser: {
+                _id: other._id,
+                firstName: other.firstName,
+                surname: other.surname,
+                username: other.username,
+                gender: other.gender
+            },
+            likedBy: match.likedBy
+        };
+    });
+}
+
 module.exports = mongoose.model('Event', EventSchema);
