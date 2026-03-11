@@ -161,6 +161,35 @@ router.delete("/:id/register", async (req, res) => {
 })
 
 /**
+ * @route GET /:eventId/end/matches
+ * @desc get the matches for a user at the end of the event
+ *
+ * This route collects a users matches at the end an event.
+ * It returns the matches in a JSON file.
+ *
+ * @param {string} id.path.required - The id of the event to update
+ *
+ * @returns {json} 200 - JSON object of the matches
+ * @returns {error} 404 - event not found.
+ * @returns {Error} 500 - Internal server error if reading the database fails or failure to unregister
+ */
+router.get("/:eventId/end/matches" ,async (req, res) => {
+    try {
+        const {eventId} = req.params;
+        const event = await Event.findById(eventId);
+        if (!event) {
+            return res.status(404).json({error: "Event not found"});
+        }
+        const matches = await Event.getMatchesAtEnd(event,req.session.user.id,req.session.user.gender);
+        res.status(200).json(matches);
+    }
+    catch (error) {
+        res.status(500).json({error: error.message});
+    }
+});
+
+
+/**
  * @route POST /events
  * @desc Post a new event to the database
  *
