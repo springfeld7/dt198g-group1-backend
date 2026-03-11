@@ -301,4 +301,54 @@ router.get("/:eventId/:round/match", reqAdmin, async (req, res) => {
     }
 });
 
+/**
+ * @route POST /events/:eventId/:round/matches
+ * @desc Save finalized matches and seating assignments for a specific round of an event
+ *
+ * This route is used by an organizer to persist the finalized seating layout
+ * for a round after reviewing or modifying the generated matches. The request
+ * must contain the match pairings along with their assigned table and seat
+ * positions. Each match is stored as a Match document, and the created Match
+ * IDs are stored in the corresponding round field of the Event document
+ * (`pairsFirstRound`, `pairsSecondRound`, or `pairsThirdRound`).
+ *
+ * @param {string} eventId.path.required - The ID of the event whose matches are being saved
+ * @param {number} round.path.required - The round number (1, 2, or 3)
+ *
+ * @param {Object} body.required - Request body containing finalized matches
+ * @param {Array<Object>} body.matches - Array of match objects
+ * @param {string} body.matches[].man - The user ID of the male participant
+ * @param {string} body.matches[].woman - The user ID of the female participant
+ * @param {number} body.matches[].tableNumber - The table number assigned to this match
+ * @param {string} body.matches[].manSeat - The seat position of the man ('left' or 'right')
+ * @param {string} body.matches[].womanSeat - The seat position of the woman ('left' or 'right')
+ *
+ * @returns {json} 200 - JSON object containing a success message and the updated event document
+ * @returns {error} 400 - Invalid round number provided
+ * @returns {Error} 500 - Internal server error if saving matches fails
+ */
+router.post("/:eventId/:round/matches", reqAdmin, async (req, res) => {
+
+    try {
+
+        const { eventId, round } = req.params;
+        const roundNum = Number(round);
+        const { matches } = req.body;
+
+        if (![1,2,3].includes(roundNum)) {
+            return res.status(400).json({ error: "Invalid round" });
+        }
+
+        const event = await Event.saveRoundMatches(eventId, roundNum, matches);
+
+        res.status(200).json({
+            message: `Round ${roundNum} matches saved`,
+            event
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
