@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Event = require("../../models/event")
+const Match = require("../../models/match")
 const reqAuth = require("../../middleware/auth")
 const reqAdmin = require("../../middleware/adminAuth")
 const { generateMatches } = require("../../services/matching-service");
@@ -57,11 +58,19 @@ router.get("/:id", async (req, res) => {
             query = query
                 .populate({
                     path: 'registeredMen',
-                    select: '_id username firstName surname email phone age location gender interests'
+                    select: '_id username firstName surname email phone age location gender interests',
+                    populate: {
+                        path: 'interests',
+                        select: 'name -_id'
+                    }
                 })
                 .populate({
                     path: 'registeredWomen',
-                    select: '_id username firstName surname email phone age location gender interests'
+                    select: '_id username firstName surname email phone age location gender interests',
+                    populate: {
+                        path: 'interests',
+                        select: 'name -_id'
+                    }
                 });
         }
 
@@ -173,18 +182,18 @@ router.delete("/:id/register", async (req, res) => {
  * @returns {error} 404 - event not found.
  * @returns {Error} 500 - Internal server error if reading the database fails or failure to unregister
  */
-router.get("/:eventId/end/matches" ,async (req, res) => {
+router.get("/:eventId/end/matches", async (req, res) => {
     try {
-        const {eventId} = req.params;
+        const { eventId } = req.params;
         const event = await Event.findById(eventId);
         if (!event) {
-            return res.status(404).json({error: "Event not found"});
+            return res.status(404).json({ error: "Event not found" });
         }
-        const matches = await Event.getMatchesAtEnd(event,req.session.user.id,req.session.user.gender);
+        const matches = await Event.getMatchesAtEnd(event, req.session.user.id, req.session.user.gender);
         res.status(200).json(matches);
     }
     catch (error) {
-        res.status(500).json({error: error.message});
+        res.status(500).json({ error: error.message });
     }
 });
 
@@ -465,6 +474,74 @@ router.get('/:eventId/:round/next-date', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route GET /users/events/:id/reviews
+ * @desc Retrieve all matches for the current user in a specific event,
+ *       including populated review objects for each match.
+ *
+ * This route fetches the event by ID, filters the matches in each round
+ * to only those including the current user (man or woman based on `req.user.gender`),
+ * and populates the reviews array of each match with detailed review objects.
+ *
+ * @param {string} eventId - The event ID passed in the URL
+ *
+ * @returns {json} 200 - JSON object containing arrays of matches per round with reviews
+ * @returns {json} 404 - Event not found
+ * @returns {json} 500 - Internal server error if fetching fails
+ */
+router.get("/:eventId/reviews", async (req, res) => {
+    const eventId = req.params.eventId;
+    const userId = req.user.id;
+    const userGender = req.user.gender; // 'man' or 'woman'
+
+    try {
+        // Fetch event and populate match IDs
+        const event = await Event.findById(eventId)
+            .populate("pairsFirstRound")
+            .populate("pairsSecondRound")
+            .populate("pairsThirdRound")
+            .exec();
+
+        if (!event) return res.status(404).json({ error: "Event not found" });
+
+        // Filter matches to only those including the current user
+        const filterUserMatches = (matches) =>
+            matches.filter((match) =>
+                userGender === "man" ? match.man.toString() === userId : match.woman.toString() === userId
+            );
+
+        // Populate reviews in matches
+        const populateReviews = async (matches) => {
+            return await Promise.all(
+                matches.map(async (match) => {
+                    const populated = await Match.findById(match._id)
+                        .populate({
+                            path: "reviews",
+                            select: "reviewer dateId round answers -_id"
+                        })
+                        .exec();
+                    return populated.reviews || [];
+                })
+            );
+        };
+
+        // Filter and populate for each round
+        const firstRoundReviews = (await populateReviews(filterUserMatches(event.pairsFirstRound))).flat();
+        const secondRoundReviews = (await populateReviews(filterUserMatches(event.pairsSecondRound))).flat();
+        const thirdRoundReviews = (await populateReviews(filterUserMatches(event.pairsThirdRound))).flat();
+
+        // Only return the reviews arrays
+        res.status(200).json({
+            firstRound: firstRoundReviews.length ? firstRoundReviews : null,
+            secondRound: secondRoundReviews.length ? secondRoundReviews : null,
+            thirdRound: thirdRoundReviews.length ? thirdRoundReviews : null
+        });
+    } catch (error) {
+        console.error("Failed to fetch event reviews:", error);
+        res.status(500).json({ error: "Failed to fetch event reviews" });
     }
 });
 
