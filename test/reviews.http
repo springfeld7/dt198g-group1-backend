@@ -9,14 +9,13 @@ POST {{url}}/review
 Content-Type: application/json
 
 {
-    "reviewer": "69939c73879f9f04d4e38186",
-    "eventId": "699ef51d040ff32d59bef37a",
-    "round": 666,
-    "dateId": "69939c73879f9f04d4e38188",
+    "eventId": "69ae86d2c1bcbd6dfad9e16e",
+    "round": 1,
+    "dateId": "69939c73879f9f04d4e38193",
     "answers": {
-        "6992ef88cd605d760113e407": "q1",
-        "6992f0edcd605d760113e40c": "q2",
-        "6992f118cd605d760113e40e": "q3",
-        "6992f230cd605d760113e40f": "q4"
+        "6992ef88cd605d760113e407": true,
+        "6992f0edcd605d760113e40c": false,
+        "6992f118cd605d760113e40e": "Younger",
+        "6992f230cd605d760113e40f": "I don't want to sit on chair for the next round, would like to hover the table instead"
     }
 }
