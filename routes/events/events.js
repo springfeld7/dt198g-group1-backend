@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Event = require("../../models/event")
 const Match = require("../../models/match")
+const User = require("../../models/user");
 const reqAuth = require("../../middleware/auth")
 const reqAdmin = require("../../middleware/adminAuth")
 const { generateMatches } = require("../../services/matching-service");
@@ -478,25 +479,22 @@ router.get('/:eventId/:round/next-date', async (req, res) => {
 });
 
 /**
- * @route GET /users/events/:id/reviews
- * @desc Retrieve all matches for the current user in a specific event,
- *       including populated review objects for each match.
+ * @route GET /events/:eventId/reviews/:userId
+ * @desc Retrieve all reviews for a specific user within a given event
  *
- * This route fetches the event by ID, filters the matches in each round
- * to only those including the current user (man or woman based on `req.user.gender`),
- * and populates the reviews array of each match with detailed review objects.
+ * This route fetches the reviews associated with the specified user for each
+ * round of the given event.
  *
- * @param {string} eventId - The event ID passed in the URL
+ * @param eventId - The event's unique identifier
+ * @param userId - The user's unique identifier
  *
- * @returns {json} 200 - JSON object containing arrays of matches per round with reviews
- * @returns {json} 404 - Event not found
+ * @returns {json} 200 - Object with `firstRound`, `secondRound`, `thirdRound` arrays of reviews
+ * @returns {json} 404 - If the event is not found
  * @returns {json} 500 - Internal server error if fetching fails
  */
-router.get("/:eventId/reviews", async (req, res) => {
-    const eventId = req.params.eventId;
-    const userId = req.user.id;
-    const userGender = req.user.gender; // 'man' or 'woman'
-
+router.get("/:eventId/reviews/:userId", async (req, res) => {
+    const { eventId, userId } = req.params;
+    console.log(`Fetching reviews for user ${userId} in event ${eventId}`);
     try {
         // Fetch event and populate match IDs
         const event = await Event.findById(eventId)
@@ -506,6 +504,9 @@ router.get("/:eventId/reviews", async (req, res) => {
             .exec();
 
         if (!event) return res.status(404).json({ error: "Event not found" });
+
+        const userGender = await User.findById(userId).then(u => u?.gender);
+        if (!userGender) return res.status(404).json({ error: "User not found" });
 
         // Filter matches to only those including the current user
         const filterUserMatches = (matches) =>

@@ -170,7 +170,7 @@ Content-Type: application/json
 ###############################################
 
 
-# Get next match for current participant in Round 1
-GET {{url}}/events/69ae86d2c1bcbd6dfad9e16e/reviews
+# Get reviews for an event
+GET {{url}}/events/69ae86d2c1bcbd6dfad9e16e/reviews/69939c73879f9f04d4e38185
 Content-Type: application/json
 ###############################################
