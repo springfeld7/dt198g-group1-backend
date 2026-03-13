@@ -216,6 +216,9 @@ EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
 
     const Match = mongoose.model("Match");
 
+    // === Toggle auto reviews here ===
+    matches = await _autoCreateReviews(matches, eventId, round);  // <-- uncomment to auto-create reviews
+
     const createdMatches = await Match.insertMany(matches);
 
     const field =
@@ -281,6 +284,73 @@ EventSchema.statics.getMatchesAtEnd = async function(event,userId,gender) {
             likedBy: match.likedBy
         };
     });
+}
+
+/**
+ * Helper to auto-generate reviews for matches.
+ * This function is used while testing to create reviews for matches without needing to manually input them.
+ * Will be useful when showcasing the an event.
+ * 
+ * @param {Array<Object>} matches - Array of match objects
+ * @param {string} eventId - Current event ID
+ * @param {number} round - Current round
+ * @returns {Promise<Array<Object>>} - Matches with created reviews attached
+ */
+async function _autoCreateReviews(matches, eventId, round) {
+    const Review = mongoose.model("Review");
+    const Question = mongoose.model("Question");
+
+    // fetch all questions from DB
+    const questions = await Question.find();
+
+    for (const match of matches) {
+        const answersForMan = {};
+        const answersForWoman = {};
+
+        for (const q of questions) {
+            if (q.type === 'boolean') {
+                answersForMan[q._id.toString()] = Math.random() < 0.5;
+                answersForWoman[q._id.toString()] = Math.random() < 0.5;
+            } else if (q.type === 'multipleChoice') {
+                answersForMan[q._id.toString()] = Math.floor(Math.random() * q.options.length);
+                answersForWoman[q._id.toString()] = Math.floor(Math.random() * q.options.length);
+            } else if (q.type === 'text') {
+                const texts = [
+                    "I don't want to sit near this person again.",
+                    "I'd like to sit further from the entrance, it's cold.",
+                    "This was a very enjoyable date.",
+                    "I felt a bit awkward, maybe next time it will be better.",
+                    "I wish the venue was quieter.",
+                    "It was fine, but the conversation was slow.",
+                    "I would prefer a different seating arrangement next time.",
+                    "I don't want to sit anywhere close to this creep again.",
+                    "I wish I could give them a zero, but that's not an option.",
+                ];
+                answersForMan[q._id.toString()] = texts[Math.floor(Math.random() * texts.length)];
+                answersForWoman[q._id.toString()] = texts[Math.floor(Math.random() * texts.length)];
+            }
+        }
+
+        const manReview = await Review.create({
+            reviewer: match.man,
+            dateId: match.woman,
+            eventId,
+            round,
+            answers: answersForMan
+        });
+
+        const womanReview = await Review.create({
+            reviewer: match.woman,
+            dateId: match.man,
+            eventId,
+            round,
+            answers: answersForWoman
+        });
+
+        match.reviews = [manReview._id, womanReview._id];
+    }
+
+    return matches;
 }
 
 module.exports = mongoose.model('Event', EventSchema);
