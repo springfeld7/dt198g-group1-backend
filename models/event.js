@@ -44,6 +44,7 @@ const EventSchema = new mongoose.Schema({
     pairsFirstRound: [ { type: Schema.Types.ObjectId, ref: 'Match' } ],
     pairsSecondRound: [ { type: Schema.Types.ObjectId, ref: 'Match' } ],
     pairsThirdRound: [ { type: Schema.Types.ObjectId, ref: 'Match' } ],
+    currentRound: {type: Number, default: 0}
 })
 
 /**
@@ -189,33 +190,6 @@ EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
 
     const Match = mongoose.model("Match");
 
-    const createdMatches = await Match.insertMany(matches);
-
-    const field =
-        round === 1 ? "pairsFirstRound" :
-        round === 2 ? "pairsSecondRound" :
-        round === 3 ? "pairsThirdRound" : null;
-
-    if (!field) throw new Error("Invalid round");
-
-    return this.findByIdAndUpdate(
-        eventId,
-        { $set: { [field]: createdMatches.map(m => m._id) } },
-        { returnDocument: 'after' }
-    );
-};
-
-/**
- * Saves matches for a specific round.
- * @param {string} eventId
- * @param {number} round
- * @param {Array<Object>} matches
- * @returns {Promise<EventDocument>}
- */
-EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
-
-    const Match = mongoose.model("Match");
-
     // === Toggle auto reviews here ===
     matches = await _autoCreateReviews(matches, eventId, round);  // <-- uncomment to auto-create reviews
 
@@ -230,7 +204,12 @@ EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
 
     return this.findByIdAndUpdate(
         eventId,
-        { $set: { [field]: createdMatches.map(m => m._id) } },
+        {
+            $set: {
+                [field]: createdMatches.map(m => m._id),
+                currentRound: round
+            }
+        },
         { returnDocument: 'after' }
     );
 };

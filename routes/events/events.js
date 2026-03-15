@@ -72,7 +72,11 @@ router.get("/:id", async (req, res) => {
                         path: 'interests',
                         select: 'name -_id'
                     }
-                });
+                })
+                // Just populate the Match documents themselves
+                .populate('pairsFirstRound')
+                .populate('pairsSecondRound')
+                .populate('pairsThirdRound');
         }
 
         const event = await query.exec();
@@ -469,7 +473,8 @@ router.get('/:eventId/:round/next-date', async (req, res) => {
                 img
             },
             tableNumber: match.tableNumber,
-            seat
+            seat,
+            startTime: match.startTime
         });
 
     } catch (err) {
