@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const {Schema} = require("mongoose");
+const { Schema } = require("mongoose");
 const objectIdRef = { type: Schema.Types.ObjectId, ref: 'User' };
 
 /**
@@ -36,22 +36,22 @@ const objectIdRef = { type: Schema.Types.ObjectId, ref: 'User' };
 const EventSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
-    date: { type: Date, required: true},
+    date: { type: Date, required: true },
     location: { type: String, required: true },
-    maxSpots : {type: Number, required: true,min: 1},
-    registeredMen: {type: [objectIdRef], default: []},
-    registeredWomen : {type: [objectIdRef], default: []},
-    pairsFirstRound: [ { type: Schema.Types.ObjectId, ref: 'Match' } ],
-    pairsSecondRound: [ { type: Schema.Types.ObjectId, ref: 'Match' } ],
-    pairsThirdRound: [ { type: Schema.Types.ObjectId, ref: 'Match' } ],
-    currentRound: {type: Number, default: 0}
+    maxSpots: { type: Number, required: true, min: 1 },
+    registeredMen: { type: [objectIdRef], default: [] },
+    registeredWomen: { type: [objectIdRef], default: [] },
+    pairsFirstRound: [{ type: Schema.Types.ObjectId, ref: 'Match' }],
+    pairsSecondRound: [{ type: Schema.Types.ObjectId, ref: 'Match' }],
+    pairsThirdRound: [{ type: Schema.Types.ObjectId, ref: 'Match' }],
+    currentRound: { type: Number, default: 0 }
 })
 
 /**
  * Returns all events from the database
  * @returns {Promise<Array<EventDocument>>} A Promise that resolves to an array of Mongoose Event documents.
  */
-EventSchema.statics.getEvents = async function() {
+EventSchema.statics.getEvents = async function () {
     return this.find()
 }
 /**
@@ -59,7 +59,7 @@ EventSchema.statics.getEvents = async function() {
  * @param id the id of the event requested
  * @returns Promise<EventDocument> A Promise that resolves to a  Mongoose Event document.
  */
-EventSchema.statics.getEventById = async function(id) {
+EventSchema.statics.getEventById = async function (id) {
     return this.findById(id)
 }
 
@@ -72,7 +72,7 @@ EventSchema.statics.getEventById = async function(id) {
  * @param {number} maxSpots - Maximum number of spots for the event
  * @returns {Promise<EventDocument>} A Promise that resolves to the newly created Mongoose Event document.
  */
-EventSchema.statics.createEvent = async function(title,description, date, location, maxSpots) {
+EventSchema.statics.createEvent = async function (title, description, date, location, maxSpots) {
     return this.create({
         title,
         description,
@@ -95,8 +95,8 @@ EventSchema.statics.createEvent = async function(title,description, date, locati
  * @returns {Promise<EventDocument>} A Promise that resolves to the updated Mongoose event document
  * @throws {Error} Throws an error if the user is already registered.
  */
-EventSchema.statics.registerForEvent = async function(event,userId,gender) {
-    const registered = await this.alreadyRegisterForEvent(event,userId,gender)
+EventSchema.statics.registerForEvent = async function (event, userId, gender) {
+    const registered = await this.alreadyRegisterForEvent(event, userId, gender)
 
     if (registered.alreadyRegistered) {
         throw new Error("User already registered");
@@ -104,8 +104,8 @@ EventSchema.statics.registerForEvent = async function(event,userId,gender) {
 
     return this.findByIdAndUpdate(
         new mongoose.Types.ObjectId(event.id),
-        {$addToSet: {[registered.field]: new mongoose.Types.ObjectId(userId)}},
-        {returnDocument: "after"}
+        { $addToSet: { [registered.field]: new mongoose.Types.ObjectId(userId) } },
+        { returnDocument: "after" }
     );
 }
 
@@ -118,8 +118,8 @@ EventSchema.statics.registerForEvent = async function(event,userId,gender) {
  * @returns {Promise<EventDocument>} A Promise that resolves to the updated Mongoose event document
  * @throws {Error} Throws an error if the user is not currently registered.
  */
-EventSchema.statics.unRegisterForEvent = async function(event,userId,gender) {
-    const registered = await this.alreadyRegisterForEvent(event,userId,gender)
+EventSchema.statics.unRegisterForEvent = async function (event, userId, gender) {
+    const registered = await this.alreadyRegisterForEvent(event, userId, gender)
 
     if (!registered.alreadyRegistered) {
         throw new Error("User already unregistered");
@@ -127,8 +127,8 @@ EventSchema.statics.unRegisterForEvent = async function(event,userId,gender) {
 
     return this.findByIdAndUpdate(
         new mongoose.Types.ObjectId(event.id),
-        {$pull: {[registered.field]: new mongoose.Types.ObjectId(userId)}},
-        {returnDocument: "after"}
+        { $pull: { [registered.field]: new mongoose.Types.ObjectId(userId) } },
+        { returnDocument: "after" }
     );
 }
 
@@ -145,7 +145,7 @@ EventSchema.statics.unRegisterForEvent = async function(event,userId,gender) {
  *
  * @returns {Promise<EventDocument>} Resolves to the updated event document.
  */
-EventSchema.statics.updateEvent = async function(event,updateFields) {
+EventSchema.statics.updateEvent = async function (event, updateFields) {
     return this.findByIdAndUpdate(
         event.id,
         { $set: updateFields },
@@ -158,7 +158,7 @@ EventSchema.statics.updateEvent = async function(event,updateFields) {
  * @param id the id of the event to be deleted
  * @returns {Promise<EventDocument>} A Promise that resolves to the deleted Mongoose event document
  */
-EventSchema.statics.delete = async function(id) {
+EventSchema.statics.delete = async function (id) {
     return this.findByIdAndDelete(id);
 }
 
@@ -171,12 +171,12 @@ EventSchema.statics.delete = async function(id) {
  *  - alreadyRegistered {boolean} Whether the user is already registered
  *  - field {string} The field that contains the user array ('registeredMen' or 'registeredWomen')
  */
-EventSchema.statics.alreadyRegisterForEvent = async function(event,userId,gender) {
+EventSchema.statics.alreadyRegisterForEvent = async function (event, userId, gender) {
     const field =
         gender === "female" ? "registeredWomen" : "registeredMen";
 
     const alreadyRegistered = event[field].some(id => id.equals(userId));
-    return { alreadyRegistered, field};
+    return { alreadyRegistered, field };
 }
 
 /**
@@ -186,7 +186,7 @@ EventSchema.statics.alreadyRegisterForEvent = async function(event,userId,gender
  * @param {Array<Object>} matches
  * @returns {Promise<EventDocument>}
  */
-EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
+EventSchema.statics.saveRoundMatches = async function (eventId, round, matches) {
 
     const Match = mongoose.model("Match");
 
@@ -197,12 +197,12 @@ EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
 
     const field =
         round === 1 ? "pairsFirstRound" :
-        round === 2 ? "pairsSecondRound" :
-        round === 3 ? "pairsThirdRound" : null;
+            round === 2 ? "pairsSecondRound" :
+                round === 3 ? "pairsThirdRound" : null;
 
     if (!field) throw new Error("Invalid round");
 
-    return this.findByIdAndUpdate(
+    let query = this.findByIdAndUpdate(
         eventId,
         {
             $set: {
@@ -212,6 +212,33 @@ EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
         },
         { returnDocument: 'after' }
     );
+
+    query = query
+        .populate({
+            path: 'registeredMen',
+            select: '_id username firstName surname email phone age location gender interests',
+            populate: { path: 'interests', select: 'name -_id' }
+        })
+        .populate({
+            path: 'registeredWomen',
+            select: '_id username firstName surname email phone age location gender interests',
+            populate: { path: 'interests', select: 'name -_id' }
+        })
+        .populate({
+            path: 'pairsFirstRound',
+            populate: { path: 'reviews' }
+        })
+        .populate({
+            path: 'pairsSecondRound',
+            populate: { path: 'reviews' }
+        })
+        .populate({
+            path: 'pairsThirdRound',
+            populate: { path: 'reviews' }
+        });
+
+    const updatedEvent = await query;
+    return updatedEvent;
 };
 
 /**
@@ -231,7 +258,7 @@ EventSchema.statics.saveRoundMatches = async function(eventId, round, matches) {
  *   likedBy: Array<import('mongoose').Types.ObjectId>
  * }>>} Resolves to an array of match objects containing the other participant and like information.
  */
-EventSchema.statics.getMatchesAtEnd = async function(event,userId,gender) {
+EventSchema.statics.getMatchesAtEnd = async function (event, userId, gender) {
     const allRounds = [
         ...event.pairsFirstRound,
         ...event.pairsSecondRound,
@@ -275,6 +302,15 @@ EventSchema.statics.getMatchesAtEnd = async function(event,userId,gender) {
  * @param {number} round - Current round
  * @returns {Promise<Array<Object>>} - Matches with created reviews attached
  */
+/**
+ * Helper to auto-generate reviews for matches.
+ * Only the 4th and last question have a 10% chance to be answered.
+ * 
+ * @param {Array<Object>} matches - Array of match objects
+ * @param {string} eventId - Current event ID
+ * @param {number} round - Current round
+ * @returns {Promise<Array<Object>>} - Matches with created reviews attached
+ */
 async function _autoCreateReviews(matches, eventId, round) {
     const Review = mongoose.model("Review");
     const Question = mongoose.model("Question");
@@ -286,7 +322,14 @@ async function _autoCreateReviews(matches, eventId, round) {
         const answersForMan = {};
         const answersForWoman = {};
 
-        for (const q of questions) {
+        for (let i = 0; i < questions.length; i++) {
+            const q = questions[i];
+
+            // Only apply 10% chance for 4th (index 3) and last question
+            if (i === 3 || i === questions.length - 1) {
+                if (Math.random() > 0.1) continue;
+            }
+
             if (q.type === 'boolean') {
                 answersForMan[q._id.toString()] = Math.random() < 0.5;
                 answersForWoman[q._id.toString()] = Math.random() < 0.5;

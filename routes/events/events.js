@@ -74,9 +74,18 @@ router.get("/:id", async (req, res) => {
                     }
                 })
                 // Just populate the Match documents themselves
-                .populate('pairsFirstRound')
-                .populate('pairsSecondRound')
-                .populate('pairsThirdRound');
+                .populate({
+                    path: 'pairsFirstRound',
+                    populate: { path: 'reviews' }
+                })
+                .populate({
+                    path: 'pairsSecondRound',
+                    populate: { path: 'reviews' }
+                })
+                .populate({
+                    path: 'pairsThirdRound',
+                    populate: { path: 'reviews' }
+                });
         }
 
         const event = await query.exec();
@@ -384,10 +393,7 @@ router.post("/:eventId/:round/matches", reqAdmin, async (req, res) => {
 
         const event = await Event.saveRoundMatches(eventId, roundNum, matches);
 
-        res.status(200).json({
-            message: `Round ${roundNum} matches saved`,
-            event
-        });
+        res.status(200).json(event);
 
     } catch (error) {
         res.status(500).json({ error: error.message });
